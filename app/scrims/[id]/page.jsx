@@ -133,6 +133,51 @@ export default function ScrimWorkspace() {
     await load();
   }
 
+  async function requestReschedule() {
+    const value = window.prompt('New date and time (example: 2026-09-15 21:00):');
+    if (!value) return;
+    const proposed = new Date(value);
+    if (Number.isNaN(proposed.valueOf())) {
+      setError('Enter a valid future date and time.');
+      return;
+    }
+    setSending(true);
+    setError('');
+    const { error: rescheduleError } = await supabase.rpc('request_scrim_reschedule', {
+      target_scrim: scrim.id,
+      proposed_time: proposed.toISOString(),
+      note: null,
+    });
+    setSending(false);
+    if (rescheduleError) {
+      setError(rescheduleError.message);
+      return;
+    }
+    window.alert(
+      'Reschedule request sent. The other team must accept before the match time changes.'
+    );
+  }
+
+  async function cancelScrim() {
+    if (!window.confirm('Cancel this confirmed scrim? This cannot be undone.')) return;
+    setSending(true);
+    setError('');
+    const { data: reopened, error: cancelError } = await supabase.rpc('cancel_confirmed_scrim', {
+      target_scrim: scrim.id,
+    });
+    setSending(false);
+    if (cancelError) {
+      setError(cancelError.message);
+      return;
+    }
+    window.alert(
+      reopened
+        ? 'Scrim canceled. Your original listing reopened as Replacement opponent needed.'
+        : 'Scrim canceled.'
+    );
+    location.assign(reopened ? '/marketplace' : '/scrims/manage');
+  }
+
   if (state === 'loading')
     return (
       <main className="workspace-page centered">
@@ -168,6 +213,14 @@ export default function ScrimWorkspace() {
       </header>
       <section className="workspace-content">
         <p className="eyebrow">CONFIRMED SCRIM</p>
+        <div className="workspace-actions">
+          <button onClick={requestReschedule} disabled={sending}>
+            Request reschedule
+          </button>
+          <button className="cancel-action" onClick={cancelScrim} disabled={sending}>
+            Cancel scrim
+          </button>
+        </div>
         {error && <div className="auth-error">{error}</div>}
         <div className="matchup">
           <div>
