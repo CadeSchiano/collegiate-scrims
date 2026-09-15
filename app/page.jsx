@@ -157,12 +157,9 @@ export default function Home() {
           <Link href="/marketplace" className="team-nav">
             Marketplace
           </Link>
-          <button
-            className={tab === 'my-scrims' ? 'active' : ''}
-            onClick={() => setTab('my-scrims')}
-          >
-            My Scrims <i>1</i>
-          </button>
+          <Link href="/scrims/manage" className="team-nav">
+            My scrims
+          </Link>
           <Link href="/team" className="team-nav">
             My Team
           </Link>
