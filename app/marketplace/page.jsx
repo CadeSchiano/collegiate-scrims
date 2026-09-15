@@ -36,6 +36,8 @@ export default function MarketplacePage() {
     date: '',
   });
   const [verified, setVerified] = useState(false);
+  const [requestingTeam, setRequestingTeam] = useState(null);
+  const [requestingId, setRequestingId] = useState('');
   async function load() {
     const {
       data: { user },
@@ -46,7 +48,7 @@ export default function MarketplacePage() {
     }
     const { data: memberships, error: membershipError } = await supabase
       .from('team_members')
-      .select('teams(verification_status,suspended_at)')
+      .select('team_id,role,teams(id,verification_status,suspended_at)')
       .eq('user_id', user.id);
     if (membershipError) {
       setError(membershipError.message);
@@ -57,6 +59,14 @@ export default function MarketplacePage() {
       (item) => item.teams?.verification_status === 'approved' && !item.teams?.suspended_at
     );
     setVerified(canUseMarketplace);
+    setRequestingTeam(
+      memberships?.find(
+        (item) =>
+          ['captain', 'manager'].includes(item.role) &&
+          item.teams?.verification_status === 'approved' &&
+          !item.teams?.suspended_at
+      )?.teams ?? null
+    );
     if (!canUseMarketplace) {
       setState('unverified');
       return;
@@ -64,7 +74,7 @@ export default function MarketplacePage() {
     const { data, error: scrimError } = await supabase
       .from('scrims')
       .select(
-        'id,min_rank,max_rank,region,scheduled_at,time_zone,duration_minutes,format,notes,replacement_needed,teams!scrims_posting_team_id_fkey(name,schools(name))'
+        'id,min_rank,max_rank,region,scheduled_at,time_zone,duration_minutes,format,notes,replacement_needed,teams!scrims_posting_team_id_fkey(id,name,schools(name))'
       )
       .eq('status', 'posted')
       .gte('scheduled_at', new Date().toISOString())
@@ -80,6 +90,20 @@ export default function MarketplacePage() {
   useEffect(() => {
     load();
   }, []);
+  async function requestScrim(scrimId) {
+    if (!requestingTeam) return;
+    setRequestingId(scrimId);
+    const { error: requestError } = await supabase.rpc('request_scrim', {
+      target_scrim: scrimId,
+      requesting_team: requestingTeam.id,
+    });
+    setRequestingId('');
+    if (requestError) {
+      setError(requestError.message);
+      return;
+    }
+    setScrims((current) => current.filter((scrim) => scrim.id !== scrimId));
+  }
   const visible = useMemo(
     () =>
       scrims.filter((scrim) => {
@@ -152,6 +176,9 @@ export default function MarketplacePage() {
         <div>
           <Link href="/team" className="market-link">
             My team
+          </Link>
+          <Link href="/scrims/manage" className="market-link">
+            My scrims
           </Link>
           <Link href="/scrims/new" className="primary">
             <Plus size={17} /> Post a scrim
@@ -261,8 +288,16 @@ export default function MarketplacePage() {
                     <small>{scrim.time_zone.replace('_', ' ')}</small>
                   </div>
                   <p>{scrim.notes || 'No additional notes.'}</p>
-                  <button className="request-next" title="Scrim requests are the next MVP step">
-                    Request scrim <span>→</span>
+                  <button
+                    className="request-next live-request"
+                    disabled={
+                      !requestingTeam ||
+                      scrim.teams?.id === requestingTeam.id ||
+                      requestingId === scrim.id
+                    }
+                    onClick={() => requestScrim(scrim.id)}
+                  >
+                    {requestingId === scrim.id ? 'Sending…' : 'Request scrim'} <span>→</span>
                   </button>
                 </div>
               </article>

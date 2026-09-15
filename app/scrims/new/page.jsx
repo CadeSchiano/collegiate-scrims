@@ -76,19 +76,17 @@ export default function NewScrimPage() {
     setSaving(true);
     setError('');
     const scheduled_at = new Date(`${form.date}T${form.time}:00`).toISOString();
-    const { error: insertError } = await supabase
-      .from('scrims')
-      .insert({
-        posting_team_id: team.id,
-        min_rank: form.min_rank,
-        max_rank: form.max_rank,
-        region: form.region,
-        scheduled_at,
-        time_zone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        duration_minutes: Number(form.duration_minutes),
-        format: form.format,
-        notes: form.notes || null,
-      });
+    const { error: insertError } = await supabase.from('scrims').insert({
+      posting_team_id: team.id,
+      min_rank: form.min_rank,
+      max_rank: form.max_rank,
+      region: form.region,
+      scheduled_at,
+      time_zone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      duration_minutes: Number(form.duration_minutes),
+      format: form.format,
+      notes: form.notes || null,
+    });
     setSaving(false);
     if (insertError) {
       setError(insertError.message);
