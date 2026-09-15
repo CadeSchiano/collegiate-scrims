@@ -1,7 +1,320 @@
 'use client';
 import Link from 'next/link';
-import { useEffect,useState } from 'react';
-import { ArrowLeft,Check,CheckCircle2,Crown,LoaderCircle,Plus,ShieldCheck,UserMinus,UsersRound,X } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import {
+  ArrowLeft,
+  Check,
+  CheckCircle2,
+  Crown,
+  LoaderCircle,
+  Plus,
+  ShieldCheck,
+  UserMinus,
+  UsersRound,
+  X,
+} from 'lucide-react';
 import { supabase } from '../../lib/supabase/client';
-const copy={pending:['Verification pending','Your team is under manual review.'],approved:['Collegiate Verified','Your team can post or request Rocket League scrims.'],rejected:['Verification not approved','Contact an administrator if you need to resubmit.'],revoked:['Verification revoked','Contact an administrator for details.']};
-export default function TeamPage(){const[state,setState]=useState('loading'),[team,setTeam]=useState(),[members,setMembers]=useState([]),[user,setUser]=useState(),[error,setError]=useState(''),[notice,setNotice]=useState(''),[invite,setInvite]=useState(false),[email,setEmail]=useState(''),[role,setRole]=useState('member'),[working,setWorking]=useState(false);async function load(){const{data:{user:u}}=await supabase.auth.getUser();if(!u){location.assign('/auth');return}setUser(u);const{data:m,error:e}=await supabase.from('team_members').select('team_id,role').eq('user_id',u.id).limit(1).maybeSingle();if(e){setError(e.message);setState('error');return}if(!m){setState('empty');return}const{data:t,error:te}=await supabase.from('teams').select('id,name,rank,region,game,verification_status,schools(name)').eq('id',m.team_id).single();const{data:r,error:re}=await supabase.from('team_members').select('user_id,role,profiles(username)').eq('team_id',m.team_id);if(te||re){setError((te||re).message);setState('error');return}setTeam({...t,myRole:m.role});setMembers(r);setState('ready')}useEffect(()=>{load()},[]);async function act(fn,msg){setWorking(true);setError('');const{error:e}=await fn();setWorking(false);if(e){setError(e.message);return}setNotice(msg);load()}async function sendInvite(e){e.preventDefault();await act(async()=>{const{data,e}=await supabase.from('team_invites').insert({team_id:team.id,email:email.toLowerCase(),role,invited_by:user.id}).select('token').single();if(e)return{error:e};await navigator.clipboard.writeText(`${location.origin}/invites/${data.token}`);return{}},`Invite link copied for ${email}.`);setInvite(false);setEmail('')}if(state==='loading')return <main className="live-team-page centered"><LoaderCircle className="spin"/></main>;if(state==='empty')return <main className="live-team-page centered"><section className="team-empty"><UsersRound/><h1>Start your collegiate roster.</h1><Link href="/teams/new" className="primary">Create a team</Link></section></main>;if(state==='error')return <main className="live-team-page centered"><section className="team-empty"><h1>Couldn’t load your team</h1><p>{error}</p></section></main>;const captain=team.myRole==='captain',manages=captain||team.myRole==='manager',[title,desc]=copy[team.verification_status];return <main className="live-team-page"><header className="team-header"><Link href="/" className="back"><ArrowLeft size={15}/> Back to Scrimnet</Link><span>{team.myRole}</span></header><section className="live-team-content"><div className="live-team-title"><div className="live-team-mark">{team.name.slice(0,2).toUpperCase()}</div><div><p className="eyebrow">YOUR TEAM</p><h1>{team.name} Rocket League</h1><p>{team.schools?.name}</p></div></div>{notice&&<div className="team-notice"><Check size={16}/>{notice}</div>}{error&&<div className="auth-error">{error}</div>}<section className={`verification-panel ${team.verification_status}`}><ShieldCheck size={24}/><div><strong>{title}</strong><p>{desc}</p></div>{team.verification_status==='approved'&&<CheckCircle2 size={20}/>}</section><div className="live-team-grid"><article className="live-profile"><h2>Team profile</h2><dl><div><dt>Game</dt><dd>{team.game}</dd></div><div><dt>Region</dt><dd>{team.region}</dd></div><div><dt>Typical level</dt><dd>{team.rank}</dd></div><div><dt>Your role</dt><dd>{team.myRole}</dd></div></dl></article><article className="live-roster"><div className="live-roster-head"><h2>Roster <small>{members.length}</small></h2>{manages&&<button className="roster-add" onClick={()=>setInvite(true)}><Plus size={14}/> Invite</button>}</div>{members.map(member=><div className="live-member" key={member.user_id}><div>{member.profiles?.username?.slice(0,2).toUpperCase()}</div><strong>{member.profiles?.username}{member.user_id===user.id&&<small> You</small>}</strong><span>{member.role}</span>{captain&&member.user_id!==user.id&&<div className="member-actions"><button title="Manager" onClick={()=>act(()=>supabase.rpc('set_team_member_role',{target_team:team.id,target_user:member.user_id,new_role:'manager'}),'Role updated.')}>M</button><button title="Member" onClick={()=>act(()=>supabase.rpc('set_team_member_role',{target_team:team.id,target_user:member.user_id,new_role:'member'}),'Role updated.')}>m</button><button title="Transfer captain" onClick={()=>confirm(`Make ${member.profiles?.username} captain?`)&&act(()=>supabase.rpc('transfer_team_captain',{target_team:team.id,new_captain:member.user_id}),'Captaincy transferred.')}><Crown size={13}/></button><button title="Remove" onClick={()=>confirm(`Remove ${member.profiles?.username}?`)&&act(()=>supabase.rpc('remove_team_member',{target_team:team.id,target_user:member.user_id}),'Member removed.')}><UserMinus size={13}/></button></div>}</div>)}</article></div></section>{invite&&<div className="overlay"><form className="modal" onSubmit={sendInvite}><button type="button" className="close" onClick={()=>setInvite(false)}><X size={20}/></button><p className="eyebrow">INVITE TEAMMATE</p><h2>Invite to {team.name}</h2><label>Email<input required type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="teammate@school.edu"/></label><label>Role<select value={role} onChange={e=>setRole(e.target.value)}><option value="member">Member</option>{captain&&<option value="manager">Manager</option>}</select></label><div className="modal-actions"><button type="button" className="secondary" onClick={()=>setInvite(false)}>Cancel</button><button className="primary" disabled={working}>{working&&<LoaderCircle className="spin" size={16}/>} Create invite</button></div></form></div>}</main>}
+const copy = {
+  pending: ['Verification pending', 'Your team is under manual review.'],
+  approved: ['Collegiate Verified', 'Your team can post or request Rocket League scrims.'],
+  rejected: ['Verification not approved', 'Contact an administrator if you need to resubmit.'],
+  revoked: ['Verification revoked', 'Contact an administrator for details.'],
+};
+export default function TeamPage() {
+  const [state, setState] = useState('loading'),
+    [team, setTeam] = useState(),
+    [members, setMembers] = useState([]),
+    [user, setUser] = useState(),
+    [error, setError] = useState(''),
+    [notice, setNotice] = useState(''),
+    [invite, setInvite] = useState(false),
+    [email, setEmail] = useState(''),
+    [role, setRole] = useState('member'),
+    [working, setWorking] = useState(false);
+  async function load() {
+    const {
+      data: { user: u },
+    } = await supabase.auth.getUser();
+    if (!u) {
+      location.assign('/auth');
+      return;
+    }
+    setUser(u);
+    const { data: m, error: e } = await supabase
+      .from('team_members')
+      .select('team_id,role')
+      .eq('user_id', u.id)
+      .limit(1)
+      .maybeSingle();
+    if (e) {
+      setError(e.message);
+      setState('error');
+      return;
+    }
+    if (!m) {
+      setState('empty');
+      return;
+    }
+    const { data: t, error: te } = await supabase
+      .from('teams')
+      .select('id,name,rank,region,game,verification_status,schools(name)')
+      .eq('id', m.team_id)
+      .single();
+    const { data: r, error: re } = await supabase
+      .from('team_members')
+      .select('user_id,role,profiles(username)')
+      .eq('team_id', m.team_id);
+    if (te || re) {
+      setError((te || re).message);
+      setState('error');
+      return;
+    }
+    setTeam({ ...t, myRole: m.role });
+    setMembers(r);
+    setState('ready');
+  }
+  useEffect(() => {
+    load();
+  }, []);
+  async function act(fn, msg) {
+    setWorking(true);
+    setError('');
+    const { error: e } = await fn();
+    setWorking(false);
+    if (e) {
+      setError(e.message);
+      return;
+    }
+    setNotice(msg);
+    load();
+  }
+  async function sendInvite(e) {
+    e.preventDefault();
+    await act(async () => {
+      const { data, e } = await supabase
+        .from('team_invites')
+        .insert({ team_id: team.id, email: email.toLowerCase(), role, invited_by: user.id })
+        .select('token')
+        .single();
+      if (e) return { error: e };
+      await navigator.clipboard.writeText(`${location.origin}/invites/${data.token}`);
+      return {};
+    }, `Invite link copied for ${email}.`);
+    setInvite(false);
+    setEmail('');
+  }
+  if (state === 'loading')
+    return (
+      <main className="live-team-page centered">
+        <LoaderCircle className="spin" />
+      </main>
+    );
+  if (state === 'empty')
+    return (
+      <main className="live-team-page centered">
+        <section className="team-empty">
+          <UsersRound />
+          <h1>Start your collegiate roster.</h1>
+          <Link href="/teams/new" className="primary">
+            Create a team
+          </Link>
+        </section>
+      </main>
+    );
+  if (state === 'error')
+    return (
+      <main className="live-team-page centered">
+        <section className="team-empty">
+          <h1>Couldn’t load your team</h1>
+          <p>{error}</p>
+        </section>
+      </main>
+    );
+  const captain = team.myRole === 'captain',
+    manages = captain || team.myRole === 'manager',
+    [title, desc] = copy[team.verification_status];
+  return (
+    <main className="live-team-page">
+      <header className="team-header">
+        <Link href="/" className="back">
+          <ArrowLeft size={15} /> Back to Scrimnet
+        </Link>
+        <span>{team.myRole}</span>
+      </header>
+      <section className="live-team-content">
+        <div className="live-team-title">
+          <div className="live-team-mark">{team.name.slice(0, 2).toUpperCase()}</div>
+          <div>
+            <p className="eyebrow">YOUR TEAM</p>
+            <h1>{team.name} Rocket League</h1>
+            <p>{team.schools?.name}</p>
+          </div>
+        </div>
+        {notice && (
+          <div className="team-notice">
+            <Check size={16} />
+            {notice}
+          </div>
+        )}
+        {error && <div className="auth-error">{error}</div>}
+        <section className={`verification-panel ${team.verification_status}`}>
+          <ShieldCheck size={24} />
+          <div>
+            <strong>{title}</strong>
+            <p>{desc}</p>
+          </div>
+          {team.verification_status === 'approved' && <CheckCircle2 size={20} />}
+        </section>
+        <div className="live-team-grid">
+          <article className="live-profile">
+            <h2>Team profile</h2>
+            <dl>
+              <div>
+                <dt>Game</dt>
+                <dd>{team.game}</dd>
+              </div>
+              <div>
+                <dt>Region</dt>
+                <dd>{team.region}</dd>
+              </div>
+              <div>
+                <dt>Typical level</dt>
+                <dd>{team.rank}</dd>
+              </div>
+              <div>
+                <dt>Your role</dt>
+                <dd>{team.myRole}</dd>
+              </div>
+            </dl>
+          </article>
+          <article className="live-roster">
+            <div className="live-roster-head">
+              <h2>
+                Roster <small>{members.length}</small>
+              </h2>
+              {manages && (
+                <button className="roster-add" onClick={() => setInvite(true)}>
+                  <Plus size={14} /> Invite
+                </button>
+              )}
+            </div>
+            {members.map((member) => (
+              <div className="live-member" key={member.user_id}>
+                <div>{member.profiles?.username?.slice(0, 2).toUpperCase()}</div>
+                <strong>
+                  {member.profiles?.username}
+                  {member.user_id === user.id && <small> You</small>}
+                </strong>
+                <span>{member.role}</span>
+                {captain && member.user_id !== user.id && (
+                  <div className="member-actions">
+                    <button
+                      title="Manager"
+                      onClick={() =>
+                        act(
+                          () =>
+                            supabase.rpc('set_team_member_role', {
+                              target_team: team.id,
+                              target_user: member.user_id,
+                              new_role: 'manager',
+                            }),
+                          'Role updated.'
+                        )
+                      }
+                    >
+                      M
+                    </button>
+                    <button
+                      title="Member"
+                      onClick={() =>
+                        act(
+                          () =>
+                            supabase.rpc('set_team_member_role', {
+                              target_team: team.id,
+                              target_user: member.user_id,
+                              new_role: 'member',
+                            }),
+                          'Role updated.'
+                        )
+                      }
+                    >
+                      m
+                    </button>
+                    <button
+                      title="Transfer captain"
+                      onClick={() =>
+                        confirm(`Make ${member.profiles?.username} captain?`) &&
+                        act(
+                          () =>
+                            supabase.rpc('transfer_team_captain', {
+                              target_team: team.id,
+                              new_captain: member.user_id,
+                            }),
+                          'Captaincy transferred.'
+                        )
+                      }
+                    >
+                      <Crown size={13} />
+                    </button>
+                    <button
+                      title="Remove"
+                      onClick={() =>
+                        confirm(`Remove ${member.profiles?.username}?`) &&
+                        act(
+                          () =>
+                            supabase.rpc('remove_team_member', {
+                              target_team: team.id,
+                              target_user: member.user_id,
+                            }),
+                          'Member removed.'
+                        )
+                      }
+                    >
+                      <UserMinus size={13} />
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))}
+          </article>
+        </div>
+      </section>
+      {invite && (
+        <div className="overlay">
+          <form className="modal" onSubmit={sendInvite}>
+            <button type="button" className="close" onClick={() => setInvite(false)}>
+              <X size={20} />
+            </button>
+            <p className="eyebrow">INVITE TEAMMATE</p>
+            <h2>Invite to {team.name}</h2>
+            <label>
+              Email
+              <input
+                required
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="teammate@school.edu"
+              />
+            </label>
+            <label>
+              Role
+              <select value={role} onChange={(e) => setRole(e.target.value)}>
+                <option value="member">Member</option>
+                {captain && <option value="manager">Manager</option>}
+              </select>
+            </label>
+            <div className="modal-actions">
+              <button type="button" className="secondary" onClick={() => setInvite(false)}>
+                Cancel
+              </button>
+              <button className="primary" disabled={working}>
+                {working && <LoaderCircle className="spin" size={16} />} Create invite
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+    </main>
+  );
+}

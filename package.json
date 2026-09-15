@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "format": "prettier --write \"app/**/*.{js,jsx,css}\" \"lib/**/*.{js,jsx}\""
   },
   "dependencies": {
     "@next/font": "latest",
@@ -14,5 +15,8 @@
     "next": "^15.1.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "prettier": "^3.9.6"
   }
 }
