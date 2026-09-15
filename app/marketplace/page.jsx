@@ -38,6 +38,8 @@ export default function MarketplacePage() {
   const [verified, setVerified] = useState(false);
   const [requestingTeam, setRequestingTeam] = useState(null);
   const [requestingId, setRequestingId] = useState('');
+  const [requestedIds, setRequestedIds] = useState([]);
+  const [notice, setNotice] = useState('');
   async function load() {
     const {
       data: { user },
@@ -102,7 +104,8 @@ export default function MarketplacePage() {
       setError(requestError.message);
       return;
     }
-    setScrims((current) => current.filter((scrim) => scrim.id !== scrimId));
+    setRequestedIds((current) => [...current, scrimId]);
+    setNotice('Scrim request sent. The posting team can now accept or decline it.');
   }
   const visible = useMemo(
     () =>
@@ -186,6 +189,12 @@ export default function MarketplacePage() {
         </div>
       </header>
       <section className="market-content">
+        {notice && (
+          <div className="team-notice">
+            <ShieldCheck size={16} />
+            {notice}
+          </div>
+        )}
         <div className="market-title">
           <div>
             <p className="eyebrow">COLLEGIATE ROCKET LEAGUE</p>
@@ -293,11 +302,17 @@ export default function MarketplacePage() {
                     disabled={
                       !requestingTeam ||
                       scrim.teams?.id === requestingTeam.id ||
-                      requestingId === scrim.id
+                      requestingId === scrim.id ||
+                      requestedIds.includes(scrim.id)
                     }
                     onClick={() => requestScrim(scrim.id)}
                   >
-                    {requestingId === scrim.id ? 'Sending…' : 'Request scrim'} <span>→</span>
+                    {requestedIds.includes(scrim.id)
+                      ? 'Request sent'
+                      : requestingId === scrim.id
+                        ? 'Sending…'
+                        : 'Request scrim'}{' '}
+                    <span>→</span>
                   </button>
                 </div>
               </article>
