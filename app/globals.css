@@ -1,4 +1,145 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,700;0,800;1,700&display=swap');
+.checkin-panel {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 14px 17px;
+  margin-top: 15px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+.checkin-panel > div {
+  display: grid;
+  grid-template-columns: 9px auto;
+  column-gap: 7px;
+  align-items: center;
+  flex: 1;
+}
+.check-dot {
+  width: 8px;
+  height: 8px;
+  border: 1px solid #b8c1ce;
+  border-radius: 50%;
+  grid-row: span 2;
+}
+.check-dot.ready {
+  background: #2da477;
+  border-color: #2da477;
+}
+.checkin-panel strong {
+  font-size: 11px;
+}
+.checkin-panel small {
+  font-size: 10px;
+  color: #8993a3;
+}
+.checkin-panel button {
+  font-size: 11px;
+  white-space: nowrap;
+}
+.checked-in {
+  padding: 10px 13px;
+  border-radius: 8px;
+  background: #e7f5ef;
+  color: #237b5c;
+  font-size: 11px;
+  font-weight: 800;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.match-chat {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  margin-top: 15px;
+  overflow: hidden;
+}
+.match-chat > header {
+  padding: 13px 17px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+}
+.match-chat > header strong {
+  font-size: 13px;
+}
+.match-chat > header span {
+  font-size: 10px;
+  color: #8e97a6;
+}
+.chat-messages {
+  padding: 16px;
+  min-height: 165px;
+  max-height: 350px;
+  overflow: auto;
+}
+.chat-empty {
+  font-size: 11px;
+  color: #919aa8;
+  text-align: center;
+  margin: 55px 0;
+}
+.chat-messages article {
+  background: #f2f4f7;
+  border-radius: 4px 9px 9px 9px;
+  padding: 8px 10px;
+  margin: 0 0 9px;
+  width: max-content;
+  max-width: 70%;
+}
+.chat-messages article.mine {
+  margin-left: auto;
+  background: #feeee7;
+  border-radius: 9px 4px 9px 9px;
+}
+.chat-messages article b {
+  font-size: 10px;
+  color: #d45f31;
+}
+.chat-messages article small {
+  font-size: 9px;
+  color: #99a2b0;
+  margin-left: 6px;
+}
+.chat-messages article p {
+  font-size: 12px;
+  margin: 4px 0 0;
+  line-height: 1.5;
+}
+.match-chat form {
+  border-top: 1px solid var(--line);
+  padding: 10px;
+  display: flex;
+  gap: 8px;
+}
+.match-chat input {
+  height: 38px;
+  flex: 1;
+  border: 1px solid #dfe3e9;
+  border-radius: 7px;
+  padding: 0 10px;
+  outline: 0;
+  font-size: 12px;
+}
+.match-chat form .primary {
+  font-size: 11px;
+  padding: 8px 12px;
+}
+@media (max-width: 650px) {
+  .checkin-panel {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .checkin-panel button {
+    grid-column: span 2;
+  }
+  .chat-messages article {
+    max-width: 86%;
+  }
+}
 .live-request {
   color: #d55e31;
   cursor: pointer;
