@@ -1,4 +1,35 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,700;0,800;1,700&display=swap');
+.reschedule-panel {
+  background: #fff8ee;
+  border: 1px solid #f2dfbd;
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 15px;
+  display: flex;
+  gap: 9px;
+  align-items: center;
+}
+.reschedule-panel > div {
+  flex: 1;
+}
+.reschedule-panel strong {
+  font-size: 12px;
+  color: #9c6922;
+}
+.reschedule-panel p {
+  font-size: 11px;
+  color: #7f8999;
+  margin: 4px 0 0;
+}
+.reschedule-panel button {
+  font-size: 11px;
+  font-weight: 800;
+  padding: 9px 10px;
+  border-radius: 7px;
+}
+.reschedule-panel.waiting {
+  display: block;
+}
 .workspace-actions {
   display: flex;
   justify-content: flex-end;

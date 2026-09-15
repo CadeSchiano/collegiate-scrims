@@ -14,6 +14,7 @@ export default function ScrimWorkspace() {
   const [myTeamId, setMyTeamId] = useState(null);
   const [checkins, setCheckins] = useState([]);
   const [messages, setMessages] = useState([]);
+  const [reschedules, setReschedules] = useState([]);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [sending, setSending] = useState(false);
@@ -43,6 +44,7 @@ export default function ScrimWorkspace() {
       { data: checkinRows, error: checkinError },
       { data: chatRows, error: chatError },
       { data: membership, error: membershipError },
+      { data: proposals, error: proposalError },
     ] = await Promise.all([
       supabase
         .from('scrim_checkins')
@@ -60,10 +62,16 @@ export default function ScrimWorkspace() {
         .eq('user_id', activeUser.id)
         .in('team_id', [match.posting_team_id, match.opponent_team_id])
         .maybeSingle(),
+      supabase
+        .from('scrim_reschedules')
+        .select('id,requested_by_team_id,proposed_time,message')
+        .eq('scrim_id', id)
+        .eq('status', 'pending')
+        .order('created_at'),
     ]);
-    if (checkinError || chatError || membershipError || !membership) {
+    if (checkinError || chatError || membershipError || proposalError || !membership) {
       setError(
-        (checkinError || chatError || membershipError)?.message ||
+        (checkinError || chatError || membershipError || proposalError)?.message ||
           'You are not on a participating team.'
       );
       setState('error');
@@ -73,6 +81,7 @@ export default function ScrimWorkspace() {
     setMyTeamId(membership.team_id);
     setCheckins(checkinRows || []);
     setMessages(chatRows || []);
+    setReschedules(proposals || []);
     setState('ready');
   }
 
@@ -178,6 +187,21 @@ export default function ScrimWorkspace() {
     location.assign(reopened ? '/marketplace' : '/scrims/manage');
   }
 
+  async function respondToReschedule(proposalId, accept) {
+    setSending(true);
+    setError('');
+    const { error: responseError } = await supabase.rpc('respond_to_scrim_reschedule', {
+      target_reschedule: proposalId,
+      accept_request: accept,
+    });
+    setSending(false);
+    if (responseError) {
+      setError(responseError.message);
+      return;
+    }
+    await load();
+  }
+
   if (state === 'loading')
     return (
       <main className="workspace-page centered">
@@ -200,6 +224,12 @@ export default function ScrimWorkspace() {
   const postingCheckin = checkins.find((checkin) => checkin.team_id === scrim.posting_team_id);
   const opponentCheckin = checkins.find((checkin) => checkin.team_id === scrim.opponent_team_id);
   const myCheckedIn = checkins.some((checkin) => checkin.team_id === myTeamId);
+  const incomingProposal = reschedules.find(
+    (proposal) => proposal.requested_by_team_id !== myTeamId
+  );
+  const outgoingProposal = reschedules.find(
+    (proposal) => proposal.requested_by_team_id === myTeamId
+  );
 
   return (
     <main className="workspace-page">
@@ -221,6 +251,44 @@ export default function ScrimWorkspace() {
             Cancel scrim
           </button>
         </div>
+        {incomingProposal && (
+          <section className="reschedule-panel">
+            <div>
+              <strong>Reschedule requested</strong>
+              <p>
+                The other team proposes{' '}
+                {new Intl.DateTimeFormat('en-US', {
+                  dateStyle: 'medium',
+                  timeStyle: 'short',
+                  timeZone: scrim.time_zone,
+                }).format(new Date(incomingProposal.proposed_time))}
+                .
+              </p>
+            </div>
+            <button
+              className="decline"
+              disabled={sending}
+              onClick={() => respondToReschedule(incomingProposal.id, false)}
+            >
+              Decline
+            </button>
+            <button
+              className="approve"
+              disabled={sending}
+              onClick={() => respondToReschedule(incomingProposal.id, true)}
+            >
+              Accept new time
+            </button>
+          </section>
+        )}
+        {outgoingProposal && (
+          <section className="reschedule-panel waiting">
+            <div>
+              <strong>Reschedule request sent</strong>
+              <p>Waiting for the other team to respond to your proposed time.</p>
+            </div>
+          </section>
+        )}
         {error && <div className="auth-error">{error}</div>}
         <div className="matchup">
           <div>
