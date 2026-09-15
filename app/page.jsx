@@ -154,12 +154,9 @@ export default function Home() {
           </span>
         </a>
         <nav>
-          <button
-            className={tab === 'marketplace' ? 'active' : ''}
-            onClick={() => setTab('marketplace')}
-          >
+          <Link href="/marketplace" className="team-nav">
             Marketplace
-          </button>
+          </Link>
           <button
             className={tab === 'my-scrims' ? 'active' : ''}
             onClick={() => setTab('my-scrims')}
@@ -253,9 +250,9 @@ function Marketplace({ query, setQuery, region, setRegion, filtered, setRequest,
             Practice against verified college teams — without hunting through Discord.
           </p>
         </div>
-        <button className="primary post" onClick={() => setShowPost(true)}>
+        <Link href="/scrims/new" className="primary post">
           <Plus size={19} /> Post a scrim
-        </button>
+        </Link>
       </section>
       <section className="content">
         <div className="market-head">

@@ -1,4 +1,344 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,700;0,800;1,700&display=swap');
+.market-page,
+.scrim-form-page {
+  min-height: 100vh;
+  background: var(--cream);
+}
+.market-page.centered,
+.scrim-form-page.centered {
+  display: grid;
+  place-items: center;
+}
+.market-header {
+  height: 70px;
+  background: #fff;
+  border-bottom: 1px solid var(--line);
+  padding: 0 max(6vw, 28px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.market-header > div {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+}
+.market-header .primary {
+  font-size: 11px;
+  padding: 10px 13px;
+  text-decoration: none;
+}
+.market-link {
+  font-size: 12px;
+  color: #637087;
+  font-weight: 800;
+  text-decoration: none;
+}
+.market-content {
+  max-width: 1060px;
+  margin: auto;
+  padding: 46px 28px 70px;
+}
+.market-title {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+.market-title h1,
+.scrim-form h1 {
+  font-size: 33px;
+  letter-spacing: -1.8px;
+  margin: 0;
+}
+.market-title h1 small {
+  font: 500 11px 'DM Mono';
+  background: #e9ebf0;
+  color: #687386;
+  border-radius: 12px;
+  padding: 4px 7px;
+  vertical-align: middle;
+}
+.market-title p:last-child {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 7px 0 0;
+}
+.market-title > span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #238260;
+  font-size: 11px;
+  font-weight: 800;
+}
+.live-filters {
+  display: flex;
+  gap: 9px;
+  margin: 27px 0 20px;
+}
+.live-filters label {
+  height: 41px;
+  border: 1px solid var(--line);
+  background: #fff;
+  border-radius: 8px;
+  padding: 0 10px;
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  color: #7e8797;
+}
+.live-filters label:first-child {
+  width: 255px;
+}
+.live-filters input {
+  border: 0;
+  outline: 0;
+  width: 100%;
+  font-size: 12px;
+}
+.live-filters select {
+  height: 41px;
+  border: 1px solid var(--line);
+  background: #fff;
+  border-radius: 8px;
+  padding: 0 10px;
+  font-size: 12px;
+  color: #536077;
+}
+.live-scrim-list {
+  display: grid;
+  gap: 12px;
+}
+.live-scrim-card {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  overflow: hidden;
+}
+.live-scrim-card.replacement {
+  border-color: #f4b874;
+}
+.live-replacement {
+  padding: 8px 17px;
+  background: #fff6eb;
+  color: #c9632d;
+  font: 500 10px 'DM Mono';
+  letter-spacing: 0.3px;
+}
+.live-scrim-team {
+  padding: 17px 19px 14px;
+  display: flex;
+  gap: 11px;
+  align-items: center;
+}
+.live-scrim-team > div {
+  width: 42px;
+  height: 42px;
+  border-radius: 11px;
+  background: #f36c36;
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font: 500 12px 'DM Mono';
+}
+.live-scrim-team h2 {
+  font-size: 15px;
+  margin: 0;
+}
+.live-scrim-team h2 span {
+  font-size: 9px;
+  color: #248561;
+  margin-left: 6px;
+  display: inline-flex;
+  gap: 2px;
+  align-items: center;
+}
+.live-scrim-team p {
+  font-size: 11px;
+  color: #7b8597;
+  margin: 3px 0 0;
+}
+.live-scrim-details {
+  display: flex;
+  gap: 32px;
+  padding: 0 19px 15px;
+}
+.live-scrim-details span {
+  font-size: 11px;
+  font-weight: 700;
+  display: grid;
+  gap: 3px;
+}
+.live-scrim-details strong {
+  font: 500 9px 'DM Mono';
+  letter-spacing: 0.7px;
+  color: #979fad;
+  text-transform: uppercase;
+}
+.live-scrim-bottom {
+  border-top: 1px solid #f0f1f3;
+  padding: 12px 19px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+.live-scrim-bottom > div {
+  display: grid;
+  grid-template-columns: 17px auto;
+  column-gap: 7px;
+  align-items: center;
+  color: #637087;
+}
+.live-scrim-bottom > div svg {
+  grid-row: span 2;
+}
+.live-scrim-bottom strong {
+  font-size: 11px;
+}
+.live-scrim-bottom small {
+  font-size: 9px;
+  color: #939cab;
+}
+.live-scrim-bottom p {
+  font-size: 11px;
+  color: #758094;
+  font-style: italic;
+  flex: 1;
+  margin: 0;
+}
+.request-next {
+  font-size: 11px;
+  color: #bdc4cd;
+  font-weight: 800;
+  cursor: not-allowed;
+}
+.request-next span {
+  margin-left: 5px;
+}
+.market-empty {
+  max-width: 440px;
+  text-align: center;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  padding: 42px 30px;
+  display: grid;
+  justify-items: center;
+  gap: 11px;
+}
+.market-empty.wide {
+  max-width: none;
+  margin-top: 15px;
+}
+.market-empty svg {
+  color: #f36c36;
+}
+.market-empty h1,
+.market-empty h2 {
+  font-size: 23px;
+  letter-spacing: -1.2px;
+  margin: 0;
+}
+.market-empty p {
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--muted);
+  margin: 0 0 8px;
+}
+.market-empty .primary {
+  text-decoration: none;
+}
+.scrim-form-page {
+  padding: 60px 20px;
+  display: grid;
+  place-items: start center;
+}
+.scrim-form {
+  width: min(560px, 100%);
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 32px;
+}
+.scrim-form > p:not(.eyebrow) {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 8px 0 22px;
+}
+.scrim-form form {
+  display: grid;
+  gap: 14px;
+}
+.scrim-form label {
+  display: grid;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 800;
+}
+.scrim-form label > span {
+  font-weight: 500;
+  color: #8992a2;
+}
+.scrim-form input,
+.scrim-form select,
+.scrim-form textarea {
+  border: 1px solid #dde1e8;
+  border-radius: 7px;
+  padding: 0 11px;
+  outline: 0;
+  font-size: 13px;
+  background: #fff;
+  min-height: 42px;
+}
+.scrim-form textarea {
+  padding: 10px;
+  min-height: 82px;
+  resize: vertical;
+}
+.scrim-form input:focus,
+.scrim-form select:focus,
+.scrim-form textarea:focus {
+  border-color: #8191ad;
+  box-shadow: 0 0 0 3px #e9edf5;
+}
+@media (max-width: 700px) {
+  .market-content {
+    padding: 31px 17px;
+  }
+  .market-title {
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .market-title > span {
+    display: none;
+  }
+  .live-filters {
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+  .live-filters label:first-child {
+    min-width: 215px;
+  }
+  .live-scrim-details {
+    gap: 18px;
+    overflow-x: auto;
+  }
+  .live-scrim-bottom p {
+    display: none;
+  }
+  .market-header {
+    padding: 0 18px;
+  }
+  .market-header > div {
+    gap: 9px;
+  }
+  .market-link {
+    display: none;
+  }
+  .live-scrim-bottom {
+    justify-content: space-between;
+  }
+}
 .team-notice {
   background: #eaf6f0;
   color: #247b5c;
