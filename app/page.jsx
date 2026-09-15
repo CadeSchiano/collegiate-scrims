@@ -45,7 +45,7 @@ export default function Home() {
       <nav>
         <button className={tab === 'marketplace' ? 'active' : ''} onClick={() => setTab('marketplace')}>Marketplace</button>
         <button className={tab === 'my-scrims' ? 'active' : ''} onClick={() => setTab('my-scrims')}>My Scrims <i>1</i></button>
-        <button className={tab === 'team' ? 'active' : ''} onClick={() => setTab('team')}>My Team</button>
+        <Link href="/team" className="team-nav">My Team</Link>
         {isAdmin && <Link href="/admin" className="admin-nav">Admin</Link>}
       </nav>
       <div className="header-actions"><button className="icon-button"><Bell size={19}/><b /></button>{user ? <div className="profile"><Avatar initials={(user.user_metadata.username || user.email).slice(0,2).toUpperCase()} color="#263c77" size="small"/><span>{user.user_metadata.username || user.email}</span><button className="sign-out" onClick={()=>supabase.auth.signOut()}>Sign out</button></div> : <Link href="/auth" className="sign-in">Sign in</Link>}<button className="mobile-menu"><Menu size={22}/></button></div>
