@@ -2,10 +2,12 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { useParams } from 'next/navigation';
 import { ArrowLeft, CalendarDays, Check, LoaderCircle, Send, ShieldCheck } from 'lucide-react';
 import { supabase } from '../../../lib/supabase/client';
 
-export default function ScrimWorkspace({ params }) {
+export default function ScrimWorkspace() {
+  const { id } = useParams();
   const [state, setState] = useState('loading');
   const [scrim, setScrim] = useState(null);
   const [user, setUser] = useState(null);
@@ -30,7 +32,7 @@ export default function ScrimWorkspace({ params }) {
       .select(
         'id,scheduled_at,time_zone,region,format,duration_minutes,notes,status,posting_team_id,opponent_team_id,posting:teams!scrims_posting_team_id_fkey(name,schools(name)),opponent:teams!scrims_opponent_team_id_fkey(name,schools(name))'
       )
-      .eq('id', params.id)
+      .eq('id', id)
       .single();
     if (matchError || match.status !== 'confirmed') {
       setError(matchError?.message || 'This scrim is not an active confirmed match.');
@@ -45,11 +47,11 @@ export default function ScrimWorkspace({ params }) {
       supabase
         .from('scrim_checkins')
         .select('team_id,checked_in_at,checked_in_by')
-        .eq('scrim_id', params.id),
+        .eq('scrim_id', id),
       supabase
         .from('messages')
         .select('id,body,created_at,user_id,profiles(username)')
-        .eq('scrim_id', params.id)
+        .eq('scrim_id', id)
         .is('deleted_at', null)
         .order('created_at'),
       supabase
@@ -76,14 +78,14 @@ export default function ScrimWorkspace({ params }) {
 
   useEffect(() => {
     load();
-  }, [params.id]);
+  }, [id]);
   useEffect(() => {
     if (state !== 'ready') return;
     const channel = supabase
-      .channel(`scrim-workspace-${params.id}`)
+      .channel(`scrim-workspace-${id}`)
       .on(
         'postgres_changes',
-        { event: '*', schema: 'public', table: 'messages', filter: `scrim_id=eq.${params.id}` },
+        { event: '*', schema: 'public', table: 'messages', filter: `scrim_id=eq.${id}` },
         load
       )
       .on(
@@ -92,7 +94,7 @@ export default function ScrimWorkspace({ params }) {
           event: '*',
           schema: 'public',
           table: 'scrim_checkins',
-          filter: `scrim_id=eq.${params.id}`,
+          filter: `scrim_id=eq.${id}`,
         },
         load
       )
@@ -100,7 +102,7 @@ export default function ScrimWorkspace({ params }) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [state, params.id]);
+  }, [state, id]);
 
   async function checkIn() {
     setSending(true);
