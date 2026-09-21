@@ -7,6 +7,7 @@ export default function ManageScrims() {
   const [state, setState] = useState('loading'),
     [requests, setRequests] = useState([]),
     [confirmed, setConfirmed] = useState([]),
+    [completed, setCompleted] = useState([]),
     [error, setError] = useState(''),
     [working, setWorking] = useState('');
   async function load() {
@@ -42,13 +43,22 @@ export default function ManageScrims() {
       .eq('status', 'confirmed')
       .or(`posting_team_id.in.(${ids.join(',')}),opponent_team_id.in.(${ids.join(',')})`)
       .order('scheduled_at');
-    if (e || me) {
-      setError((e || me).message);
+    const { data: finished, error: finishedError } = await supabase
+      .from('scrims')
+      .select(
+        'id,scheduled_at,format,region,posting_team_id,opponent_team_id,posting:teams!scrims_posting_team_id_fkey(name),opponent:teams!scrims_opponent_team_id_fkey(name),outcome:scrim_outcomes(outcome,no_show_team_id)'
+      )
+      .eq('status', 'completed')
+      .or(`posting_team_id.in.(${ids.join(',')}),opponent_team_id.in.(${ids.join(',')})`)
+      .order('scheduled_at', { ascending: false });
+    if (e || me || finishedError) {
+      setError((e || me || finishedError).message);
       setState('error');
       return;
     }
     setRequests(pending || []);
     setConfirmed(matches || []);
+    setCompleted(finished || []);
     setState('ready');
   }
   useEffect(() => {
@@ -147,6 +157,38 @@ export default function ManageScrims() {
                 <span>Open →</span>
               </Link>
             ))}
+          </div>
+        )}
+        <h1 className="confirmed-title">
+          Finished scrims <small>{completed.length}</small>
+        </h1>
+        {completed.length === 0 ? (
+          <div className="manage-empty">
+            Finished scrims will be kept here for your team’s history.
+          </div>
+        ) : (
+          <div className="confirmed-list completed-list">
+            {completed.map((s) => {
+              const outcome = s.outcome?.[0];
+              const noShowTeam =
+                outcome?.no_show_team_id === s.posting_team_id ? s.posting?.name : s.opponent?.name;
+              return (
+                <Link href={`/scrims/${s.id}`} key={s.id}>
+                  <Check size={17} />
+                  <div>
+                    <strong>
+                      {s.posting?.name} <span>vs</span> {s.opponent?.name}
+                    </strong>
+                    <small>
+                      {outcome?.outcome === 'no_show'
+                        ? `${noShowTeam} recorded as a no-show`
+                        : 'Completed practice scrim'}
+                    </small>
+                  </div>
+                  <span>View →</span>
+                </Link>
+              );
+            })}
           </div>
         )}
       </section>

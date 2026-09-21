@@ -94,6 +94,43 @@
   gap: 6px;
   align-items: center;
 }
+.outcome-panel {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 14px 17px;
+  margin-top: 15px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.outcome-panel > div {
+  flex: 1;
+}
+.outcome-panel strong {
+  font-size: 12px;
+}
+.outcome-panel p {
+  font-size: 10px;
+  color: #788397;
+  margin: 4px 0 0;
+  line-height: 1.5;
+}
+.outcome-panel button {
+  font-size: 11px;
+  font-weight: 800;
+  border-radius: 7px;
+  padding: 9px 10px;
+  white-space: nowrap;
+}
+.outcome-panel.complete {
+  background: #eff9f4;
+  border-color: #cdeada;
+  color: #237b5c;
+}
+.outcome-panel.complete p {
+  color: #578271;
+}
 .match-chat {
   background: #fff;
   border: 1px solid var(--line);
@@ -333,6 +370,9 @@
   font-size: 11px;
   color: #d55e31;
   font-weight: 800;
+}
+.completed-list a > svg {
+  color: #2b926b;
 }
 .workspace-content {
   max-width: 850px;

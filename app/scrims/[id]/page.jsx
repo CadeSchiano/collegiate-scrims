@@ -3,7 +3,15 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { ArrowLeft, CalendarDays, Check, LoaderCircle, Send, ShieldCheck } from 'lucide-react';
+import {
+  ArrowLeft,
+  CalendarDays,
+  Check,
+  CheckCircle2,
+  LoaderCircle,
+  Send,
+  ShieldCheck,
+} from 'lucide-react';
 import { supabase } from '../../../lib/supabase/client';
 
 export default function ScrimWorkspace() {
@@ -12,9 +20,11 @@ export default function ScrimWorkspace() {
   const [scrim, setScrim] = useState(null);
   const [user, setUser] = useState(null);
   const [myTeamId, setMyTeamId] = useState(null);
+  const [myTeamRole, setMyTeamRole] = useState(null);
   const [checkins, setCheckins] = useState([]);
   const [messages, setMessages] = useState([]);
   const [reschedules, setReschedules] = useState([]);
+  const [outcome, setOutcome] = useState(null);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [sending, setSending] = useState(false);
@@ -35,8 +45,8 @@ export default function ScrimWorkspace() {
       )
       .eq('id', id)
       .single();
-    if (matchError || match.status !== 'confirmed') {
-      setError(matchError?.message || 'This scrim is not an active confirmed match.');
+    if (matchError || !['confirmed', 'completed'].includes(match.status)) {
+      setError(matchError?.message || 'This scrim is not available to your team.');
       setState('error');
       return;
     }
@@ -45,6 +55,7 @@ export default function ScrimWorkspace() {
       { data: chatRows, error: chatError },
       { data: membership, error: membershipError },
       { data: proposals, error: proposalError },
+      { data: outcomeRow, error: outcomeError },
     ] = await Promise.all([
       supabase
         .from('scrim_checkins')
@@ -58,7 +69,7 @@ export default function ScrimWorkspace() {
         .order('created_at'),
       supabase
         .from('team_members')
-        .select('team_id')
+        .select('team_id,role')
         .eq('user_id', activeUser.id)
         .in('team_id', [match.posting_team_id, match.opponent_team_id])
         .maybeSingle(),
@@ -68,10 +79,22 @@ export default function ScrimWorkspace() {
         .eq('scrim_id', id)
         .eq('status', 'pending')
         .order('created_at'),
+      supabase
+        .from('scrim_outcomes')
+        .select('outcome,no_show_team_id,created_at')
+        .eq('scrim_id', id)
+        .maybeSingle(),
     ]);
-    if (checkinError || chatError || membershipError || proposalError || !membership) {
+    if (
+      checkinError ||
+      chatError ||
+      membershipError ||
+      proposalError ||
+      outcomeError ||
+      !membership
+    ) {
       setError(
-        (checkinError || chatError || membershipError || proposalError)?.message ||
+        (checkinError || chatError || membershipError || proposalError || outcomeError)?.message ||
           'You are not on a participating team.'
       );
       setState('error');
@@ -79,9 +102,11 @@ export default function ScrimWorkspace() {
     }
     setScrim(match);
     setMyTeamId(membership.team_id);
+    setMyTeamRole(membership.role);
     setCheckins(checkinRows || []);
     setMessages(chatRows || []);
     setReschedules(proposals || []);
+    setOutcome(outcomeRow);
     setState('ready');
   }
 
@@ -202,6 +227,36 @@ export default function ScrimWorkspace() {
     await load();
   }
 
+  async function completeScrim() {
+    if (!window.confirm('Mark this scrim as completed? Both teams must have checked in.')) return;
+    setSending(true);
+    setError('');
+    const { error: completionError } = await supabase.rpc('complete_scrim', {
+      target_scrim: scrim.id,
+    });
+    setSending(false);
+    if (completionError) {
+      setError(completionError.message);
+      return;
+    }
+    await load();
+  }
+
+  async function reportNoShow() {
+    if (!window.confirm('Report the other team as a no-show? This closes the scrim.')) return;
+    setSending(true);
+    setError('');
+    const { error: noShowError } = await supabase.rpc('report_scrim_no_show', {
+      target_scrim: scrim.id,
+    });
+    setSending(false);
+    if (noShowError) {
+      setError(noShowError.message);
+      return;
+    }
+    await load();
+  }
+
   if (state === 'loading')
     return (
       <main className="workspace-page centered">
@@ -230,6 +285,16 @@ export default function ScrimWorkspace() {
   const outgoingProposal = reschedules.find(
     (proposal) => proposal.requested_by_team_id === myTeamId
   );
+  const canManage = ['captain', 'manager'].includes(myTeamRole);
+  const scheduledEnd = new Date(scrim.scheduled_at).valueOf() + scrim.duration_minutes * 60000;
+  const noShowTime = new Date(scrim.scheduled_at).valueOf() + 30 * 60000;
+  const otherTeamCheckedIn = myTeamId === scrim.posting_team_id ? opponentCheckin : postingCheckin;
+  const canComplete =
+    scrim.status === 'confirmed' && Date.now() >= scheduledEnd && postingCheckin && opponentCheckin;
+  const canReportNoShow =
+    scrim.status === 'confirmed' && Date.now() >= noShowTime && myCheckedIn && !otherTeamCheckedIn;
+  const noShowTeam =
+    outcome?.no_show_team_id === scrim.posting_team_id ? scrim.posting?.name : scrim.opponent?.name;
 
   return (
     <main className="workspace-page">
@@ -238,19 +303,23 @@ export default function ScrimWorkspace() {
           <ArrowLeft size={15} /> My scrims
         </Link>
         <span>
-          <ShieldCheck size={16} /> Confirmed
+          <ShieldCheck size={16} /> {scrim.status === 'completed' ? 'Completed' : 'Confirmed'}
         </span>
       </header>
       <section className="workspace-content">
-        <p className="eyebrow">CONFIRMED SCRIM</p>
-        <div className="workspace-actions">
-          <button onClick={requestReschedule} disabled={sending}>
-            Request reschedule
-          </button>
-          <button className="cancel-action" onClick={cancelScrim} disabled={sending}>
-            Cancel scrim
-          </button>
-        </div>
+        <p className="eyebrow">
+          {scrim.status === 'completed' ? 'FINISHED SCRIM' : 'CONFIRMED SCRIM'}
+        </p>
+        {scrim.status === 'confirmed' && (
+          <div className="workspace-actions">
+            <button onClick={requestReschedule} disabled={sending}>
+              Request reschedule
+            </button>
+            <button className="cancel-action" onClick={cancelScrim} disabled={sending}>
+              Cancel scrim
+            </button>
+          </div>
+        )}
         {incomingProposal && (
           <section className="reschedule-panel">
             <div>
@@ -290,6 +359,21 @@ export default function ScrimWorkspace() {
           </section>
         )}
         {error && <div className="auth-error">{error}</div>}
+        {outcome && (
+          <section className="outcome-panel complete">
+            <CheckCircle2 size={19} />
+            <div>
+              <strong>
+                {outcome.outcome === 'no_show' ? 'No-show recorded' : 'Scrim completed'}
+              </strong>
+              <p>
+                {outcome.outcome === 'no_show'
+                  ? `${noShowTeam} did not check in for this scrim.`
+                  : 'Both teams checked in and this practice scrim is complete.'}
+              </p>
+            </div>
+          </section>
+        )}
         <div className="matchup">
           <div>
             <div className="match-mark">{scrim.posting?.name?.slice(0, 2).toUpperCase()}</div>
@@ -336,20 +420,46 @@ export default function ScrimWorkspace() {
                 : 'Waiting for check-in'}
             </small>
           </div>
-          <button
-            className={myCheckedIn ? 'checked-in' : 'primary'}
-            disabled={sending || myCheckedIn}
-            onClick={checkIn}
-          >
-            {myCheckedIn ? (
-              <>
-                <Check size={16} /> Team checked in
-              </>
-            ) : (
-              'Check my team in'
-            )}
-          </button>
+          {scrim.status === 'confirmed' && (
+            <button
+              className={myCheckedIn ? 'checked-in' : 'primary'}
+              disabled={sending || myCheckedIn}
+              onClick={checkIn}
+            >
+              {myCheckedIn ? (
+                <>
+                  <Check size={16} /> Team checked in
+                </>
+              ) : (
+                'Check my team in'
+              )}
+            </button>
+          )}
         </section>
+        {scrim.status === 'confirmed' && (
+          <section className="outcome-panel">
+            <div>
+              <strong>Close out this scrim</strong>
+              <p>
+                {canComplete
+                  ? 'Both teams checked in. Mark the practice session complete.'
+                  : canReportNoShow
+                    ? 'The other team has not checked in. You can report a no-show.'
+                    : 'Completion is available after the scheduled duration. No-shows can be reported 30 minutes after start by a checked-in team.'}
+              </p>
+            </div>
+            {canComplete && (
+              <button className="approve" disabled={sending || !canManage} onClick={completeScrim}>
+                Mark completed
+              </button>
+            )}
+            {canReportNoShow && (
+              <button className="decline" disabled={sending || !canManage} onClick={reportNoShow}>
+                Report no-show
+              </button>
+            )}
+          </section>
+        )}
         <div className="workspace-details">
           <CalendarDays size={20} />
           <div>
