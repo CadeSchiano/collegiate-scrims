@@ -24,6 +24,7 @@ export default function TeamPage() {
   const [state, setState] = useState('loading'),
     [team, setTeam] = useState(),
     [members, setMembers] = useState([]),
+    [reliability, setReliability] = useState(),
     [user, setUser] = useState(),
     [error, setError] = useState(''),
     [notice, setNotice] = useState(''),
@@ -60,17 +61,22 @@ export default function TeamPage() {
       .select('id,name,rank,region,game,verification_status,schools(name)')
       .eq('id', m.team_id)
       .single();
-    const { data: r, error: re } = await supabase
-      .from('team_members')
-      .select('user_id,role,profiles(username)')
-      .eq('team_id', m.team_id);
-    if (te || re) {
-      setError((te || re).message);
+    const [{ data: r, error: re }, { data: reliabilityRows, error: reliabilityError }] =
+      await Promise.all([
+        supabase
+          .from('team_members')
+          .select('user_id,role,profiles(username)')
+          .eq('team_id', m.team_id),
+        supabase.rpc('get_team_reliability', { target_team: m.team_id }),
+      ]);
+    if (te || re || reliabilityError) {
+      setError((te || re || reliabilityError).message);
       setState('error');
       return;
     }
     setTeam({ ...t, myRole: m.role });
     setMembers(r);
+    setReliability(reliabilityRows?.[0]);
     setState('ready');
   }
   useEffect(() => {
@@ -278,6 +284,30 @@ export default function TeamPage() {
             ))}
           </article>
         </div>
+        <section className="reliability-summary">
+          <div>
+            <p className="eyebrow">PRACTICE RELIABILITY</p>
+            <h2>Team reliability</h2>
+            <p>
+              Private team history for dependable scheduling. This is not a ranking or a performance
+              score.
+            </p>
+          </div>
+          <dl>
+            <div>
+              <dt>{reliability?.completed_scrims ?? 0}</dt>
+              <dd>Completed scrims</dd>
+            </div>
+            <div>
+              <dt>{reliability?.late_cancellations ?? 0}</dt>
+              <dd>Late cancellations</dd>
+            </div>
+            <div>
+              <dt>{reliability?.no_shows ?? 0}</dt>
+              <dd>No-shows</dd>
+            </div>
+          </dl>
+        </section>
       </section>
       {invite && (
         <div className="overlay">
