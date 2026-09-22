@@ -8,6 +8,7 @@ import {
   CalendarDays,
   Check,
   CheckCircle2,
+  Flag,
   LoaderCircle,
   Send,
   ShieldCheck,
@@ -26,8 +27,11 @@ export default function ScrimWorkspace() {
   const [reschedules, setReschedules] = useState([]);
   const [outcome, setOutcome] = useState(null);
   const [message, setMessage] = useState('');
+  const [reportReason, setReportReason] = useState('');
   const [error, setError] = useState('');
   const [sending, setSending] = useState(false);
+  const [reporting, setReporting] = useState(false);
+  const [reportSent, setReportSent] = useState(false);
 
   async function load() {
     const {
@@ -257,6 +261,24 @@ export default function ScrimWorkspace() {
     await load();
   }
 
+  async function submitReport(event) {
+    event.preventDefault();
+    if (!reportReason.trim()) return;
+    setReporting(true);
+    setError('');
+    const { error: reportError } = await supabase.rpc('submit_scrim_report', {
+      target_scrim: scrim.id,
+      report_reason: reportReason.trim(),
+    });
+    setReporting(false);
+    if (reportError) {
+      setError(reportError.message);
+      return;
+    }
+    setReportReason('');
+    setReportSent(true);
+  }
+
   if (state === 'loading')
     return (
       <main className="workspace-page centered">
@@ -467,6 +489,36 @@ export default function ScrimWorkspace() {
             <p>{scrim.notes || 'No additional notes.'}</p>
           </div>
         </div>
+        <section className="match-report">
+          <div>
+            <strong>Need help with this match?</strong>
+            <p>
+              Reports go privately to Scrimnet admins. Use this for safety, abuse, or serious
+              scheduling issues.
+            </p>
+          </div>
+          {reportSent ? (
+            <span className="report-sent">
+              <Check size={15} /> Report sent
+            </span>
+          ) : (
+            <form onSubmit={submitReport}>
+              <textarea
+                required
+                minLength="5"
+                maxLength="1000"
+                value={reportReason}
+                onChange={(event) => setReportReason(event.target.value)}
+                placeholder={`Report ${
+                  myTeamId === scrim.posting_team_id ? scrim.opponent?.name : scrim.posting?.name
+                }…`}
+              />
+              <button className="secondary" disabled={reporting}>
+                <Flag size={14} /> {reporting ? 'Sending…' : 'Send report'}
+              </button>
+            </form>
+          )}
+        </section>
         <section className="match-chat">
           <header>
             <strong>Match chat</strong>

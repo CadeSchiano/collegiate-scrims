@@ -14,7 +14,7 @@ Scrimnet is a practice-first platform for legitimate collegiate Rocket League te
 - Supports team-level check-in and private realtime chat
 - Handles reschedule requests and cancellation/replacement flows
 - Records completed scrims and accountable no-shows without scores or rankings
-- Gives admins a verification queue and moderation foundation
+- Lets teams privately report match issues and gives admins a moderation queue
 
 ## Product principle
 
@@ -88,7 +88,7 @@ Create account
 → Complete the scrim or report a no-show
 ```
 
-Before public beta, remaining work includes reliability displays, email notifications, reports/moderation, production deployment, and final mobile QA.
+Before public beta, remaining work includes email notifications, production deployment, and final mobile QA.
 
 ## License
 

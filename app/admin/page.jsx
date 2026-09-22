@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { ArrowLeft, Check, LoaderCircle, ShieldCheck, X } from 'lucide-react';
+import { ArrowLeft, Check, Flag, LoaderCircle, ShieldCheck, X } from 'lucide-react';
 import { supabase } from '../../lib/supabase/client';
 
 function TeamMark({ team }) {
@@ -12,6 +12,7 @@ function TeamMark({ team }) {
 export default function AdminPage() {
   const [state, setState] = useState('loading');
   const [teams, setTeams] = useState([]);
+  const [reports, setReports] = useState([]);
   const [error, setError] = useState('');
   const [working, setWorking] = useState('');
   async function load() {
@@ -36,19 +37,30 @@ export default function AdminPage() {
       setState('denied');
       return;
     }
-    const { data, error: teamError } = await supabase
-      .from('teams')
-      .select(
-        'id,name,rank,region,school_email,supporting_url,created_at,schools(name),profiles!teams_captain_id_fkey(username)'
-      )
-      .eq('verification_status', 'pending')
-      .order('created_at', { ascending: true });
-    if (teamError) {
-      setError(teamError.message);
+    const [{ data, error: teamError }, { data: reportRows, error: reportError }] =
+      await Promise.all([
+        supabase
+          .from('teams')
+          .select(
+            'id,name,rank,region,school_email,supporting_url,created_at,schools(name),profiles!teams_captain_id_fkey(username)'
+          )
+          .eq('verification_status', 'pending')
+          .order('created_at', { ascending: true }),
+        supabase
+          .from('reports')
+          .select(
+            'id,reason,status,created_at,reported_team:teams!reports_reported_team_id_fkey(name,schools(name)),reporter:profiles!reports_reporter_id_fkey(username)'
+          )
+          .in('status', ['open', 'reviewing'])
+          .order('created_at', { ascending: true }),
+      ]);
+    if (teamError || reportError) {
+      setError((teamError || reportError).message);
       setState('error');
       return;
     }
     setTeams(data || []);
+    setReports(reportRows || []);
     setState('ready');
   }
   useEffect(() => {
@@ -63,6 +75,14 @@ export default function AdminPage() {
       .eq('id', id);
     if (updateError) setError(updateError.message);
     else setTeams((current) => current.filter((team) => team.id !== id));
+    setWorking('');
+  }
+  async function updateReport(id, status) {
+    setWorking(id);
+    setError('');
+    const { error: updateError } = await supabase.from('reports').update({ status }).eq('id', id);
+    if (updateError) setError(updateError.message);
+    else setReports((current) => current.filter((report) => report.id !== id));
     setWorking('');
   }
   if (state === 'loading')
@@ -163,6 +183,54 @@ export default function AdminPage() {
                     Approve
                   </button>
                 </div>
+              </article>
+            ))}
+          </div>
+        )}
+        <div className="admin-section-heading">
+          <p className="eyebrow">MATCH MODERATION</p>
+          <h1>
+            Open reports <small>{reports.length}</small>
+          </h1>
+          <p className="admin-subtitle">Review reports submitted privately by teams in a match.</p>
+        </div>
+        {reports.length === 0 ? (
+          <div className="admin-empty compact">
+            <Check size={25} />
+            <h2>No open reports.</h2>
+          </div>
+        ) : (
+          <div className="report-queue">
+            {reports.map((report) => (
+              <article key={report.id}>
+                <Flag size={18} />
+                <div>
+                  <strong>{report.reported_team?.name || 'Team'} was reported</strong>
+                  <small>
+                    Submitted by @{report.reporter?.username || 'team member'} ·{' '}
+                    {new Date(report.created_at).toLocaleString()}
+                  </small>
+                  <p>{report.reason}</p>
+                </div>
+                <button
+                  className="reject"
+                  disabled={working === report.id}
+                  onClick={() => updateReport(report.id, 'dismissed')}
+                >
+                  Dismiss
+                </button>
+                <button
+                  className="approve"
+                  disabled={working === report.id}
+                  onClick={() => updateReport(report.id, 'resolved')}
+                >
+                  {working === report.id ? (
+                    <LoaderCircle className="spin" size={15} />
+                  ) : (
+                    <Check size={15} />
+                  )}
+                  Resolve
+                </button>
               </article>
             ))}
           </div>
