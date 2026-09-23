@@ -56,7 +56,7 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ## Database setup
 
-Run the SQL files in `supabase/migrations/` in filename order through the Supabase SQL Editor. They create the core schema, security policies, school directory, admin/verification flow, team limits, marketplace, match lifecycle, realtime chat, check-ins, rescheduling, and cancellation handling.
+Run the SQL files in `supabase/migrations/` in filename order through the Supabase SQL Editor. They create the core schema, security policies, school directory, admin/verification flow, team limits, marketplace, match lifecycle, realtime chat, check-ins, rescheduling, cancellation handling, reliability tracking, and moderation tools.
 
 Never commit `.env.local`, Supabase secret keys, database passwords, or email-provider credentials.
 
