@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import {
-  ArrowLeft,
   CalendarDays,
   Check,
   CheckCircle2,
@@ -14,6 +13,7 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 import { supabase } from '../../../lib/supabase/client';
+import BackButton from '../../../components/BackButton';
 
 export default function ScrimWorkspace() {
   const { id } = useParams();
@@ -282,6 +282,7 @@ export default function ScrimWorkspace() {
   if (state === 'loading')
     return (
       <main className="workspace-page centered">
+        <BackButton fallback="/scrims/manage" />
         <LoaderCircle className="spin" />
       </main>
     );
@@ -289,6 +290,7 @@ export default function ScrimWorkspace() {
     return (
       <main className="workspace-page centered">
         <section className="market-empty">
+          <BackButton fallback="/scrims/manage" />
           <h1>Couldn’t open this scrim</h1>
           <p>{error}</p>
           <Link href="/scrims/manage" className="primary">
@@ -321,9 +323,7 @@ export default function ScrimWorkspace() {
   return (
     <main className="workspace-page">
       <header className="workspace-header">
-        <Link href="/scrims/manage" className="back">
-          <ArrowLeft size={15} /> My scrims
-        </Link>
+        <BackButton fallback="/scrims/manage" label="My scrims" />
         <span>
           <ShieldCheck size={16} /> {scrim.status === 'completed' ? 'Completed' : 'Confirmed'}
         </span>

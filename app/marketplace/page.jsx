@@ -13,6 +13,7 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase/client';
+import BackButton from '../../components/BackButton';
 
 const regions = ['All regions', 'NA East', 'NA Central', 'NA West', 'EU', 'Other / Custom'];
 const formats = ['Any format', 'BO5', 'BO7', '30 minutes', '60 minutes', 'Custom'];
@@ -131,6 +132,7 @@ export default function MarketplacePage() {
     return (
       <main className="market-page centered">
         <section className="market-empty">
+          <BackButton />
           <ShieldCheck size={36} />
           <h1>Sign in to find scrims.</h1>
           <p>Scrimnet is for verified collegiate Rocket League teams.</p>
@@ -144,6 +146,7 @@ export default function MarketplacePage() {
     return (
       <main className="market-page centered">
         <section className="market-empty">
+          <BackButton />
           <ShieldCheck size={36} />
           <h1>Team verification required.</h1>
           <p>Once your collegiate team is approved, you can browse, post, and request scrims.</p>
@@ -157,6 +160,7 @@ export default function MarketplacePage() {
     return (
       <main className="market-page centered">
         <section className="market-empty">
+          <BackButton />
           <h1>Couldn’t load scrims</h1>
           <p>{error}</p>
           <button className="primary" onClick={load}>
@@ -168,14 +172,17 @@ export default function MarketplacePage() {
   return (
     <main className="market-page">
       <header className="market-header">
-        <Link href="/" className="brand">
-          <span className="brand-mark">
-            <span />
-          </span>
-          <span>
-            scrim<span>net</span>
-          </span>
-        </Link>
+        <div className="market-header-start">
+          <BackButton />
+          <Link href="/" className="brand">
+            <span className="brand-mark">
+              <span />
+            </span>
+            <span>
+              scrim<span>net</span>
+            </span>
+          </Link>
+        </div>
         <div>
           <Link href="/team" className="market-link">
             My team

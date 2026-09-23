@@ -2,8 +2,9 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { ArrowLeft, Check, Flag, LoaderCircle, ShieldCheck, X } from 'lucide-react';
+import { Check, Flag, LoaderCircle, ShieldCheck, X } from 'lucide-react';
 import { supabase } from '../../lib/supabase/client';
+import BackButton from '../../components/BackButton';
 
 function TeamMark({ team }) {
   return <div className="admin-mark">{team.name.slice(0, 2).toUpperCase()}</div>;
@@ -88,6 +89,7 @@ export default function AdminPage() {
   if (state === 'loading')
     return (
       <main className="admin-page centered">
+        <BackButton fallback="/" />
         <LoaderCircle className="spin" size={24} />
       </main>
     );
@@ -95,6 +97,7 @@ export default function AdminPage() {
     return (
       <main className="admin-page centered">
         <section className="admin-empty">
+          <BackButton fallback="/" />
           <ShieldCheck size={34} />
           <h1>Admin access required</h1>
           <p>Your account is not an administrator yet.</p>
@@ -108,6 +111,7 @@ export default function AdminPage() {
     return (
       <main className="admin-page centered">
         <section className="admin-empty">
+          <BackButton fallback="/" />
           <h1>Couldn’t load the queue</h1>
           <p>{error}</p>
           <button className="primary" onClick={load}>
@@ -119,9 +123,7 @@ export default function AdminPage() {
   return (
     <main className="admin-page">
       <header className="admin-header">
-        <Link href="/" className="back">
-          <ArrowLeft size={15} /> Back to Scrimnet
-        </Link>
+        <BackButton fallback="/" />
         <span>
           <ShieldCheck size={17} /> Admin
         </span>

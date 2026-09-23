@@ -2,8 +2,9 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { ArrowLeft, ArrowRight, CheckCircle2, LoaderCircle } from 'lucide-react';
+import { ArrowRight, CheckCircle2, LoaderCircle } from 'lucide-react';
 import { supabase } from '../../../lib/supabase/client';
+import BackButton from '../../../components/BackButton';
 
 const ranks = [
   'Champion',
@@ -80,6 +81,7 @@ export default function NewTeamPage() {
   if (loading)
     return (
       <main className="form-page">
+        <BackButton fallback="/" />
         <LoaderCircle className="spin" size={22} />
       </main>
     );
@@ -87,6 +89,7 @@ export default function NewTeamPage() {
     return (
       <main className="form-page">
         <section className="form-card success-card">
+          <BackButton fallback="/" />
           <CheckCircle2 size={35} />
           <p className="eyebrow">VERIFICATION SUBMITTED</p>
           <h1>Your team is in review.</h1>
@@ -103,9 +106,7 @@ export default function NewTeamPage() {
   return (
     <main className="form-page">
       <section className="form-card">
-        <Link href="/" className="back">
-          <ArrowLeft size={15} /> Back to marketplace
-        </Link>
+        <BackButton fallback="/" label="Back" />
         <p className="eyebrow">TEAM VERIFICATION</p>
         <h1>Create your team.</h1>
         <p className="form-subtitle">

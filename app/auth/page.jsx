@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { ArrowRight, CheckCircle2, LoaderCircle } from 'lucide-react';
 import { supabase } from '../../lib/supabase/client';
+import BackButton from '../../components/BackButton';
 
 export default function AuthPage() {
   const [mode, setMode] = useState('login');
@@ -30,6 +31,7 @@ export default function AuthPage() {
   }
   return (
     <main className="auth-page">
+      <BackButton className="auth-back" />
       <Link href="/" className="auth-brand">
         <span className="brand-mark">
           <span />

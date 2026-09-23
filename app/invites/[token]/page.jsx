@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { CheckCircle2, LoaderCircle, UsersRound } from 'lucide-react';
 import { supabase } from '../../../lib/supabase/client';
+import BackButton from '../../../components/BackButton';
 export default function InvitePage({ params }) {
   const [state, setState] = useState('ready'),
     [error, setError] = useState('');
@@ -25,6 +26,7 @@ export default function InvitePage({ params }) {
   }
   return (
     <main className="invite-page">
+      <BackButton className="invite-back" />
       <section className="invite-card">
         {state === 'done' ? (
           <>

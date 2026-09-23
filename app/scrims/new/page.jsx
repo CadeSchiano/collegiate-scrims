@@ -2,8 +2,9 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { ArrowLeft, CheckCircle2, LoaderCircle, Plus } from 'lucide-react';
+import { CheckCircle2, LoaderCircle, Plus } from 'lucide-react';
 import { supabase } from '../../../lib/supabase/client';
+import BackButton from '../../../components/BackButton';
 
 const ranks = [
   'Champion',
@@ -97,6 +98,7 @@ export default function NewScrimPage() {
   if (state === 'loading')
     return (
       <main className="scrim-form-page centered">
+        <BackButton fallback="/marketplace" />
         <LoaderCircle className="spin" size={24} />
       </main>
     );
@@ -104,6 +106,7 @@ export default function NewScrimPage() {
     return (
       <main className="scrim-form-page centered">
         <section className="market-empty">
+          <BackButton fallback="/marketplace" />
           <h1>Verified captain or manager required.</h1>
           <p>Your team needs approval before posting a marketplace listing.</p>
           <Link href="/team" className="primary">
@@ -116,6 +119,7 @@ export default function NewScrimPage() {
     return (
       <main className="scrim-form-page centered">
         <section className="market-empty">
+          <BackButton fallback="/marketplace" />
           <h1>Couldn’t prepare your form</h1>
           <p>{error}</p>
         </section>
@@ -125,6 +129,7 @@ export default function NewScrimPage() {
     return (
       <main className="scrim-form-page centered">
         <section className="market-empty">
+          <BackButton fallback="/marketplace" />
           <CheckCircle2 size={36} />
           <h1>Your scrim is live.</h1>
           <p>Verified collegiate teams can now find it in the marketplace.</p>
@@ -137,9 +142,7 @@ export default function NewScrimPage() {
   return (
     <main className="scrim-form-page">
       <section className="scrim-form">
-        <Link href="/marketplace" className="back">
-          <ArrowLeft size={15} /> Back to marketplace
-        </Link>
+        <BackButton fallback="/marketplace" />
         <p className="eyebrow">NEW SCRIM</p>
         <h1>Post a scrim</h1>
         <p>

@@ -2,7 +2,6 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import {
-  ArrowLeft,
   Check,
   CheckCircle2,
   Crown,
@@ -14,6 +13,7 @@ import {
   X,
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase/client';
+import BackButton from '../../components/BackButton';
 const copy = {
   pending: ['Verification pending', 'Your team is under manual review.'],
   approved: ['Collegiate Verified', 'Your team can post or request Rocket League scrims.'],
@@ -112,6 +112,7 @@ export default function TeamPage() {
   if (state === 'loading')
     return (
       <main className="live-team-page centered">
+        <BackButton fallback="/" />
         <LoaderCircle className="spin" />
       </main>
     );
@@ -119,6 +120,7 @@ export default function TeamPage() {
     return (
       <main className="live-team-page centered">
         <section className="team-empty">
+          <BackButton fallback="/" />
           <UsersRound />
           <h1>Start your collegiate roster.</h1>
           <Link href="/teams/new" className="primary">
@@ -131,6 +133,7 @@ export default function TeamPage() {
     return (
       <main className="live-team-page centered">
         <section className="team-empty">
+          <BackButton fallback="/" />
           <h1>Couldn’t load your team</h1>
           <p>{error}</p>
         </section>
@@ -142,9 +145,7 @@ export default function TeamPage() {
   return (
     <main className="live-team-page">
       <header className="team-header">
-        <Link href="/" className="back">
-          <ArrowLeft size={15} /> Back to Scrimnet
-        </Link>
+        <BackButton fallback="/" label="Back" />
         <span>{team.myRole}</span>
       </header>
       <section className="live-team-content">

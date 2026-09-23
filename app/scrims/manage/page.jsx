@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { CalendarDays, Check, LoaderCircle, X } from 'lucide-react';
 import { supabase } from '../../../lib/supabase/client';
+import BackButton from '../../../components/BackButton';
 export default function ManageScrims() {
   const [state, setState] = useState('loading'),
     [requests, setRequests] = useState([]),
@@ -81,15 +82,14 @@ export default function ManageScrims() {
   if (state === 'loading')
     return (
       <main className="manage-page centered">
+        <BackButton fallback="/marketplace" />
         <LoaderCircle className="spin" />
       </main>
     );
   return (
     <main className="manage-page">
       <header className="manage-header">
-        <Link href="/marketplace" className="back">
-          ← Marketplace
-        </Link>
+        <BackButton fallback="/marketplace" />
         <Link href="/scrims/new" className="primary">
           Post a scrim
         </Link>

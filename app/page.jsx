@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { ArrowRight, CheckCircle2, ShieldCheck, UsersRound } from 'lucide-react';
 import { supabase } from '../lib/supabase/client';
+import BackButton from '../components/BackButton';
 
 export default function Home() {
   const [user, setUser] = useState(null);
@@ -37,14 +38,17 @@ export default function Home() {
   return (
     <main className="home-landing">
       <header className="home-header">
-        <Link href="/" className="brand">
-          <span className="brand-mark">
-            <span />
-          </span>
-          <span>
-            scrim<span>net</span>
-          </span>
-        </Link>
+        <div className="home-header-start">
+          <BackButton fallback="/" />
+          <Link href="/" className="brand">
+            <span className="brand-mark">
+              <span />
+            </span>
+            <span>
+              scrim<span>net</span>
+            </span>
+          </Link>
+        </div>
         <nav>
           <Link href="/marketplace">Marketplace</Link>
           {user && <Link href="/scrims/manage">My scrims</Link>}
