@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase/client';
 import BackButton from '../../components/BackButton';
+import NotificationsBell from '../../components/NotificationsBell';
 
 const regions = ['All regions', 'NA East', 'NA Central', 'NA West', 'EU', 'Other / Custom'];
 const formats = ['Any format', 'BO5', 'BO7', '30 minutes', '60 minutes', 'Custom'];
@@ -184,6 +185,7 @@ export default function MarketplacePage() {
           </Link>
         </div>
         <div>
+          <NotificationsBell />
           <Link href="/team" className="market-link">
             My team
           </Link>

@@ -1121,6 +1121,101 @@
   padding: 9px 13px;
   text-decoration: none;
 }
+.home-account-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.notifications-menu {
+  position: relative;
+}
+.notification-trigger {
+  position: relative;
+  display: grid;
+  place-items: center;
+  color: #617087;
+}
+.notification-trigger b {
+  position: absolute;
+  top: -8px;
+  right: -10px;
+  min-width: 15px;
+  height: 15px;
+  padding: 0 3px;
+  border-radius: 9px;
+  background: var(--orange);
+  color: #fff;
+  font-size: 8px;
+  line-height: 15px;
+}
+.notifications-panel {
+  position: absolute;
+  top: 29px;
+  right: 0;
+  z-index: 20;
+  width: min(340px, calc(100vw - 32px));
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 12px 35px #1b2a4530;
+}
+.notifications-panel > header {
+  position: static;
+  height: auto;
+  padding: 13px 14px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  background: #fff;
+}
+.notifications-panel > header strong {
+  font-size: 12px;
+}
+.notifications-panel > header span {
+  margin-left: auto;
+  color: #d55e31;
+  font-size: 10px;
+  font-weight: 800;
+}
+.notifications-panel > .spin {
+  display: block;
+  margin: 22px auto;
+}
+.notifications-empty {
+  margin: 0;
+  padding: 23px 14px;
+  color: #7e8999;
+  font-size: 11px;
+  text-align: center;
+}
+.notification-item {
+  width: 100%;
+  padding: 12px 14px;
+  display: flex;
+  gap: 8px;
+  text-align: left;
+}
+.notification-item:hover {
+  background: #f8fafc;
+}
+.notification-item > svg {
+  flex: 0 0 auto;
+  color: #2d9a70;
+  margin-top: 2px;
+}
+.notification-item div {
+  display: grid;
+  gap: 3px;
+}
+.notification-item strong {
+  font-size: 11px;
+}
+.notification-item span {
+  color: #788397;
+  font-size: 10px;
+  line-height: 1.4;
+}
 .back-button {
   color: #6f7b8e;
   display: inline-flex;
@@ -1284,6 +1379,50 @@
 }
 .live-member strong {
   font-size: 12px;
+}
+.invite-recipient {
+  position: relative;
+}
+.invite-recipient > small {
+  display: block;
+  color: #7d8797;
+  font-size: 10px;
+  line-height: 1.45;
+  margin-top: 5px;
+}
+.invite-matches {
+  position: absolute;
+  top: 65px;
+  right: 0;
+  left: 0;
+  z-index: 5;
+  overflow: hidden;
+  border: 1px solid #dfe3e9;
+  border-radius: 7px;
+  background: #fff;
+  box-shadow: 0 8px 20px #1a263620;
+}
+.invite-matches button {
+  width: 100%;
+  padding: 8px 10px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  text-align: left;
+  font-size: 11px;
+}
+.invite-matches button:hover {
+  background: #f5f7fa;
+}
+.invite-matches span {
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border-radius: 6px;
+  background: #263c77;
+  color: #fff;
+  font: 500 9px 'DM Mono';
 }
 .live-member span {
   font-size: 10px;

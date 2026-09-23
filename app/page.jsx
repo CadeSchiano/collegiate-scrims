@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { ArrowRight, CheckCircle2, ShieldCheck, UsersRound } from 'lucide-react';
 import { supabase } from '../lib/supabase/client';
 import BackButton from '../components/BackButton';
+import NotificationsBell from '../components/NotificationsBell';
 
 export default function Home() {
   const [user, setUser] = useState(null);
@@ -60,9 +61,12 @@ export default function Home() {
           )}
         </nav>
         {user ? (
-          <button className="sign-out" onClick={() => supabase.auth.signOut()}>
-            Sign out
-          </button>
+          <div className="home-account-actions">
+            <NotificationsBell />
+            <button className="sign-out" onClick={() => supabase.auth.signOut()}>
+              Sign out
+            </button>
+          </div>
         ) : (
           <Link href="/auth" className="primary home-sign-in">
             Sign in

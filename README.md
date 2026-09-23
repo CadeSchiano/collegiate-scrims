@@ -7,6 +7,7 @@ Scrimnet is a practice-first platform for legitimate collegiate Rocket League te
 ## What it does
 
 - Creates individual user accounts and collegiate team rosters
+- Supports email invites and username invites with in-app notifications
 - Manually verifies teams before marketplace access
 - Lets verified captains and managers post Rocket League scrims
 - Lets verified teams request, accept, or decline scrims

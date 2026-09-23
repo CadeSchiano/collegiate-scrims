@@ -29,7 +29,9 @@ export default function TeamPage() {
     [error, setError] = useState(''),
     [notice, setNotice] = useState(''),
     [invite, setInvite] = useState(false),
-    [email, setEmail] = useState(''),
+    [recipient, setRecipient] = useState(''),
+    [matches, setMatches] = useState([]),
+    [selectedMatch, setSelectedMatch] = useState(),
     [role, setRole] = useState('member'),
     [working, setWorking] = useState(false);
   async function load() {
@@ -82,6 +84,23 @@ export default function TeamPage() {
   useEffect(() => {
     load();
   }, []);
+  useEffect(() => {
+    const query = recipient.trim();
+    if (query.length < 2 || query.includes('@')) {
+      setMatches([]);
+      return undefined;
+    }
+    const timeout = window.setTimeout(async () => {
+      const { data } = await supabase
+        .from('profiles')
+        .select('id,username')
+        .ilike('username', `${query}%`)
+        .neq('id', user?.id || '')
+        .limit(5);
+      setMatches(data || []);
+    }, 200);
+    return () => window.clearTimeout(timeout);
+  }, [recipient, user?.id]);
   async function act(fn, msg) {
     setWorking(true);
     setError('');
@@ -96,18 +115,29 @@ export default function TeamPage() {
   }
   async function sendInvite(e) {
     e.preventDefault();
-    await act(async () => {
-      const { data, e } = await supabase
-        .from('team_invites')
-        .insert({ team_id: team.id, email: email.toLowerCase(), role, invited_by: user.id })
-        .select('token')
-        .single();
-      if (e) return { error: e };
-      await navigator.clipboard.writeText(`${location.origin}/invites/${data.token}`);
-      return {};
-    }, `Invite link copied for ${email}.`);
+    setWorking(true);
+    setError('');
+    const isEmail = recipient.includes('@');
+    const { data: token, error: inviteError } = await supabase.rpc('create_team_invite', {
+      target_team: team.id,
+      recipient_email: isEmail ? recipient.trim() : null,
+      recipient_username: isEmail ? null : selectedMatch?.username || recipient.trim(),
+      invite_role: role,
+    });
+    setWorking(false);
+    if (inviteError) {
+      setError(inviteError.message);
+      return;
+    }
+    if (isEmail) {
+      await navigator.clipboard.writeText(`${location.origin}/invites/${token}`);
+      setNotice(`Invite link copied for ${recipient.trim()}.`);
+    } else {
+      setNotice(`In-app invite sent to @${selectedMatch?.username || recipient.trim()}.`);
+    }
     setInvite(false);
-    setEmail('');
+    setRecipient('');
+    setSelectedMatch(undefined);
   }
   if (state === 'loading')
     return (
@@ -318,15 +348,38 @@ export default function TeamPage() {
             </button>
             <p className="eyebrow">INVITE TEAMMATE</p>
             <h2>Invite to {team.name}</h2>
-            <label>
-              Email
+            <label className="invite-recipient">
+              Email or username
               <input
                 required
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="teammate@school.edu"
+                value={recipient}
+                onChange={(e) => {
+                  setRecipient(e.target.value);
+                  setSelectedMatch(undefined);
+                }}
+                placeholder="teammate@school.edu or username"
               />
+              {matches.length > 0 && !selectedMatch && (
+                <div className="invite-matches">
+                  {matches.map((match) => (
+                    <button
+                      type="button"
+                      key={match.id}
+                      onClick={() => {
+                        setRecipient(match.username);
+                        setSelectedMatch(match);
+                        setMatches([]);
+                      }}
+                    >
+                      <span>{match.username.slice(0, 2).toUpperCase()}</span>@{match.username}
+                    </button>
+                  ))}
+                </div>
+              )}
+              <small>
+                Username invites appear in the player’s Scrimnet notification bell. Email invites
+                copy a private link for you to send.
+              </small>
             </label>
             <label>
               Role
