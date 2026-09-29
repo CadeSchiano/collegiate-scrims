@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { ArrowRight, CheckCircle2, LoaderCircle } from 'lucide-react';
+import { ArrowRight, LoaderCircle } from 'lucide-react';
 import { supabase } from '../../lib/supabase/client';
 import BackButton from '../../components/BackButton';
 
@@ -12,13 +12,11 @@ export default function AuthPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   async function submit(e) {
     e.preventDefault();
     setError('');
-    setMessage('');
 
     if (mode === 'signup' && password !== confirmPassword) {
       setError('Passwords do not match.');
@@ -39,11 +37,6 @@ export default function AuthPage() {
         : await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
     if (response.error) return setError(response.error.message);
-
-    if (mode === 'signup' && !response.data.session) {
-      return setMessage('Check your email to confirm your account, then come back to sign in.');
-    }
-
     window.location.assign('/');
   }
   return (
@@ -65,12 +58,6 @@ export default function AuthPage() {
             ? 'Create your account to get your team verified and find scrims.'
             : 'Sign in to manage your team and upcoming scrims.'}
         </p>
-        {message && (
-          <div className="auth-success">
-            <CheckCircle2 size={17} />
-            {message}
-          </div>
-        )}
         {error && <div className="auth-error">{error}</div>}
         <form onSubmit={submit}>
           {mode === 'signup' && (
@@ -132,7 +119,6 @@ export default function AuthPage() {
             onClick={() => {
               setMode(mode === 'signup' ? 'login' : 'signup');
               setError('');
-              setMessage('');
               setConfirmPassword('');
             }}
           >
