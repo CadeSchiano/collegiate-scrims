@@ -9,7 +9,7 @@
     "format": "prettier --write \"app/**/*.{js,jsx,css}\" \"components/**/*.{js,jsx}\" \"lib/**/*.{js,jsx,mjs}\" \"tests/**/*.mjs\" \"docs/**/*.md\" \".github/workflows/*.{yml,yaml}\" .prettierrc.json eslint.config.mjs next.config.mjs package.json README.md PRODUCT_GUARDRAILS.md",
     "format:check": "prettier --check \"app/**/*.{js,jsx,css}\" \"components/**/*.{js,jsx}\" \"lib/**/*.{js,jsx,mjs}\" \"tests/**/*.mjs\" \"docs/**/*.md\" \".github/workflows/*.{yml,yaml}\" .prettierrc.json eslint.config.mjs next.config.mjs package.json README.md PRODUCT_GUARDRAILS.md",
     "lint": "eslint .",
-    "test": "node --test tests/**/*.test.mjs"
+    "test": "node --test tests/*.test.mjs"
   },
   "dependencies": {
     "@next/font": "latest",
