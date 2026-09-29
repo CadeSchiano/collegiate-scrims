@@ -18,12 +18,8 @@ export default function Home() {
       } = await supabase.auth.getUser();
       setUser(activeUser);
       if (!activeUser) return;
-      const { data } = await supabase
-        .from('profiles')
-        .select('is_admin')
-        .eq('id', activeUser.id)
-        .maybeSingle();
-      setIsAdmin(data?.is_admin === true);
+      const { data } = await supabase.rpc('is_admin');
+      setIsAdmin(data === true);
     }
 
     loadSession();

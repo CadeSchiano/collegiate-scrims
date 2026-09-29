@@ -24,17 +24,13 @@ export default function AdminPage() {
       window.location.assign('/auth');
       return;
     }
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('is_admin')
-      .eq('id', user.id)
-      .single();
+    const { data: isAdmin, error: profileError } = await supabase.rpc('is_admin');
     if (profileError) {
       setError(profileError.message);
       setState('error');
       return;
     }
-    if (!profile.is_admin) {
+    if (!isAdmin) {
       setState('denied');
       return;
     }
