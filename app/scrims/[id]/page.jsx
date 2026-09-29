@@ -13,6 +13,10 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 import { supabase } from '../../../lib/supabase/client';
+import {
+  canCompleteScrim,
+  canReportNoShow as canReportScrimNoShow,
+} from '../../../lib/scrimLifecycle.mjs';
 import BackButton from '../../../components/BackButton';
 
 export default function ScrimWorkspace() {
@@ -310,13 +314,20 @@ export default function ScrimWorkspace() {
     (proposal) => proposal.requested_by_team_id === myTeamId
   );
   const canManage = ['captain', 'manager'].includes(myTeamRole);
-  const scheduledEnd = new Date(scrim.scheduled_at).valueOf() + scrim.duration_minutes * 60000;
-  const noShowTime = new Date(scrim.scheduled_at).valueOf() + 30 * 60000;
   const otherTeamCheckedIn = myTeamId === scrim.posting_team_id ? opponentCheckin : postingCheckin;
-  const canComplete =
-    scrim.status === 'confirmed' && Date.now() >= scheduledEnd && postingCheckin && opponentCheckin;
-  const canReportNoShow =
-    scrim.status === 'confirmed' && Date.now() >= noShowTime && myCheckedIn && !otherTeamCheckedIn;
+  const canComplete = canCompleteScrim({
+    status: scrim.status,
+    scheduledAt: scrim.scheduled_at,
+    durationMinutes: scrim.duration_minutes,
+    postingTeamCheckedIn: Boolean(postingCheckin),
+    opponentTeamCheckedIn: Boolean(opponentCheckin),
+  });
+  const canReportNoShow = canReportScrimNoShow({
+    status: scrim.status,
+    scheduledAt: scrim.scheduled_at,
+    myTeamCheckedIn: myCheckedIn,
+    otherTeamCheckedIn: Boolean(otherTeamCheckedIn),
+  });
   const noShowTeam =
     outcome?.no_show_team_id === scrim.posting_team_id ? scrim.posting?.name : scrim.opponent?.name;
 

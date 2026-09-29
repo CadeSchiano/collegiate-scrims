@@ -1,96 +1,157 @@
 # Scrimnet
 
-> The collegiate Rocket League scrim network.
+[![CI](https://github.com/CadeSchiano/collegiate-scrims/actions/workflows/ci.yml/badge.svg)](https://github.com/CadeSchiano/collegiate-scrims/actions/workflows/ci.yml)
 
-Scrimnet is a practice-first platform for legitimate collegiate Rocket League teams to find opponents, schedule scrims, coordinate privately, and build a reliable practice community—without hunting through Discord.
+> A practice-first platform for verified collegiate Rocket League teams to find, schedule, and coordinate scrims.
 
-## What it does
+Scrimnet replaces fragmented Discord messages with a structured workflow for collegiate Rocket League practice. Teams can create a roster, complete manual verification, post or request a scrim, and coordinate privately once a match is confirmed.
 
-- Creates individual user accounts and collegiate team rosters
-- Supports email invites and username invites with in-app notifications
-- Manually verifies teams before marketplace access
-- Lets verified captains and managers post Rocket League scrims
-- Lets verified teams request, accept, or decline scrims
-- Provides a private confirmed-match workspace
-- Supports team-level check-in and private realtime chat
-- Handles reschedule requests and cancellation/replacement flows
-- Records completed scrims and accountable no-shows without scores or rankings
-- Lets teams privately report match issues and gives admins a moderation queue
+It is intentionally not a ranked competitive platform. Scrimnet does not include rankings, ladders, tournament standings, scores, public win/loss records, or player performance statistics.
 
-## Product principle
+## Live demo
 
-Scrimnet is for practice, not competitive status.
+The current beta deployment is available at [scrimnet.vercel.app](https://scrimnet.vercel.app).
 
-It intentionally does **not** include rankings, ladders, tournaments, public W/L records, match scores, or player/team performance stats. The only team behavior data tracked is reliability: check-ins, completed scrims, late cancellations, no-shows, and show-up rate.
+## Screenshots
 
-See [PRODUCT_GUARDRAILS.md](PRODUCT_GUARDRAILS.md) for the full scope policy.
+No screenshots are committed yet so the repository does not present stale or fabricated product views. See [docs/screenshots/README.md](docs/screenshots/README.md) for the exact screens to capture and where to place them.
 
-## Stack
+## Core features
 
-- **Next.js** — web app
-- **React** — interface
-- **Supabase** — PostgreSQL, authentication, Row Level Security, and realtime chat
-- **CSS** — responsive UI styling
+- Email/password account creation and sign-in through Supabase Auth
+- Collegiate team creation, manual verification, and captain/manager/member roster roles
+- Team invitations by Scrimnet username with in-app notifications, or by a shareable email invite link
+- A verified-team marketplace for future Rocket League scrim listings
+- Scrim posting, request submission, acceptance, and decline workflows
+- Private confirmed-match workspace with realtime match chat and team check-in
+- Reschedule proposals, cancellation handling, and replacement-opponent listings
+- Completed-scrim and no-show workflows with private reliability summaries
+- Private match reports and an admin queue for team verification and moderation
 
-## Run locally
+## Tech stack
+
+- [Next.js](https://nextjs.org/) and [React](https://react.dev/)
+- [Supabase](https://supabase.com/) for Auth, PostgreSQL, Row Level Security (RLS), and Realtime
+- CSS for the responsive interface
+- [Vercel](https://vercel.com/) for the beta deployment and analytics
+- Node's built-in test runner, ESLint, Prettier, and GitHub Actions for engineering checks
+
+## Architecture
+
+Scrimnet is a client-rendered Next.js application. Browser components use the Supabase JavaScript client; Supabase Auth manages sessions, PostgreSQL stores application data, and RLS plus database functions enforce data boundaries.
+
+```mermaid
+flowchart LR
+  U[User] --> N[Next.js / React UI]
+  N --> A[Supabase Auth]
+  N --> D[Supabase PostgreSQL]
+  D --> R[RLS policies and database functions]
+  D --> RT[Realtime: messages and check-ins]
+  RT --> N
+```
+
+There are no Next.js API routes or server actions in the current implementation. The important authorization and lifecycle rules live in the Supabase schema, RLS policies, and `security definer` database functions under `supabase/migrations/`.
+
+## Primary workflow
+
+```text
+Create account
+→ Create or join a team
+→ Manual team verification
+→ Post or find a scrim
+→ Request and accept a matchup
+→ Coordinate in the private workspace
+→ Check in
+→ Complete, cancel, replace, or report a no-show
+```
+
+## Database and authorization model
+
+The central relationships are:
+
+- A Supabase Auth user receives a `profiles` row.
+- Teams belong to schools and have a captain plus team-membership rows for their roster.
+- Scrims have a posting team and, after acceptance, an opponent team.
+- Scrim requests, check-ins, reschedule proposals, cancellations, outcomes, messages, and reports connect to that workflow.
+
+The database uses RLS and narrowly scoped database functions to enforce the workflow. In particular:
+
+- School-directory reads are public so the team-creation form can load choices.
+- Approved, non-suspended teams are required to post or request marketplace scrims.
+- A captain or manager is required for privileged team and scrim actions.
+- Only participating team members (and admins) can read confirmed-match messages, check-ins, reschedule proposals, and outcomes.
+- Match messages require the signed-in sender to be a participant.
+- Admin verification and report moderation are based on the `profiles.is_admin` flag and RLS policies.
+
+RLS is a key boundary, not a claim of a formal security audit. Read the migrations before changing policies or adding a new data-access path.
+
+## Project structure
+
+```text
+app/                    Next.js routes and page-level UI
+components/             Shared navigation and notification components
+lib/                    Supabase client and small application utilities
+supabase/migrations/    Ordered PostgreSQL schema, RLS, and workflow migrations
+tests/                  Deterministic lifecycle unit tests
+.github/workflows/      Continuous-integration workflow
+docs/screenshots/       Screenshot capture guide and future repository images
+```
+
+## Local development
 
 Requirements: Node.js 20+ and npm.
 
 ```bash
 npm install
-```
-
-Create `.env.local` in the project root:
-
-```env
-NEXT_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your_publishable_key
-```
-
-Then start the app:
-
-```bash
+cp .env.example .env.local
 npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
 
+### Environment variables
+
+| Variable                               | Purpose                                         |
+| -------------------------------------- | ----------------------------------------------- |
+| `NEXT_PUBLIC_SUPABASE_URL`             | Supabase project URL used by the browser client |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Supabase browser publishable/anon key           |
+
+Only browser-safe Supabase values belong in these variables. Never commit a database password, service-role key, or any other server secret.
+
 ## Database setup
 
-Run the SQL files in `supabase/migrations/` in filename order through the Supabase SQL Editor. They create the core schema, security policies, school directory, admin/verification flow, team limits, marketplace, match lifecycle, realtime chat, check-ins, rescheduling, cancellation handling, reliability tracking, and moderation tools.
+This repository currently applies database changes through the Supabase SQL Editor rather than a configured Supabase CLI project.
 
-Never commit `.env.local`, Supabase secret keys, database passwords, or email-provider credentials.
+1. Create a Supabase project.
+2. Run the files in `supabase/migrations/` in filename order.
+3. Configure Supabase Auth's Site URL and redirect URLs for local development and the deployment URL.
+4. Mark the intended administrator account by setting its `profiles.is_admin` value through the Supabase dashboard/SQL Editor.
 
-## Main routes
+The migrations create the schema, RLS policies, Realtime publication entries, school directory, and database functions used by the application. Apply new migrations to the production project before relying on the associated code change.
 
-| Route | Purpose |
-| --- | --- |
-| `/auth` | Account sign-up and sign-in |
-| `/team` | Live team profile and roster |
-| `/teams/new` | Team creation and verification submission |
-| `/marketplace` | Verified-team scrim marketplace |
-| `/scrims/new` | Post a new scrim |
-| `/scrims/manage` | Incoming requests and confirmed scrims |
-| `/scrims/[id]` | Private match workspace, check-in, and chat |
-| `/admin` | Admin-only verification queue |
+## Quality checks
 
-## Status
-
-The core marketplace flow is working:
-
-```text
-Create account
-→ Create team
-→ Admin verifies team
-→ Post scrim
-→ Request scrim
-→ Accept
-→ Check in and coordinate
-→ Complete the scrim or report a no-show
+```bash
+npm run format:check
+npm run lint
+npm test
+npm run build
 ```
 
-Before public beta, remaining work includes email notifications, production deployment, and final mobile QA.
+The tests cover the deterministic client-side lifecycle gates used by the match workspace: the check-in window, requirements for completing a scrim, and requirements for reporting a no-show. Database functions and RLS policies remain the authoritative enforcement layer and should be tested in a Supabase environment when those migrations change.
+
+GitHub Actions runs formatting, linting, tests, and a production build on pushes and pull requests. Its build uses safe placeholder environment values and does not contact the production Supabase project.
+
+## Product guardrails
+
+See [PRODUCT_GUARDRAILS.md](PRODUCT_GUARDRAILS.md) for the permanent scope policy. Reliability information—check-ins, completed practices, late cancellations, and no-shows—is allowed because it helps teams schedule dependable practice. Competitive-status features are intentionally out of scope.
+
+## Current status
+
+The beta supports the full core practice workflow from team creation through match closeout, plus roster invitations, moderation, and deployment analytics. Email invitations currently create a private link for a captain or manager to share; Scrimnet does not yet send outbound invitation emails itself.
+
+Before expanding beyond a controlled beta, priorities include broader school-directory coverage, mobile QA, an operational process for verification/moderation, and any desired outbound email provider integration.
 
 ## License
 
-Private project — all rights reserved.
+No open-source license has been selected. The source is currently all rights reserved; making the repository public does not grant permission to reuse it. Choose and add a license only if you want to grant specific reuse rights.

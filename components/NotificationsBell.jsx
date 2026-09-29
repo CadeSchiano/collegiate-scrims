@@ -52,7 +52,12 @@ export default function NotificationsBell() {
 
   return (
     <div className="notifications-menu">
-      <button type="button" className="notification-trigger" onClick={toggle} aria-label="Notifications">
+      <button
+        type="button"
+        className="notification-trigger"
+        onClick={toggle}
+        aria-label="Notifications"
+      >
         <Bell size={18} />
         {unreadCount > 0 && <b>{unreadCount > 9 ? '9+' : unreadCount}</b>}
       </button>
