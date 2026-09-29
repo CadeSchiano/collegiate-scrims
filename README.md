@@ -125,7 +125,8 @@ This repository currently applies database changes through the Supabase SQL Edit
 1. Create a Supabase project.
 2. Run the files in `supabase/migrations/` in filename order.
 3. Configure Supabase Auth's Site URL and redirect URLs for local development and the deployment URL.
-4. Mark the intended administrator account by setting its `profiles.is_admin` value through the Supabase dashboard/SQL Editor.
+4. If email confirmation is required, enable **Confirm Email** in Supabase Auth's Email provider and configure an SMTP provider before inviting external testers.
+5. Mark the intended administrator account by setting its `profiles.is_admin` value through the Supabase dashboard/SQL Editor.
 
 The migrations create the schema, RLS policies, Realtime publication entries, school directory, and database functions used by the application. Apply new migrations to the production project before relying on the associated code change.
 

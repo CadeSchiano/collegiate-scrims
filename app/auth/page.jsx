@@ -11,6 +11,7 @@ export default function AuthPage() {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -18,15 +19,31 @@ export default function AuthPage() {
     e.preventDefault();
     setError('');
     setMessage('');
+
+    if (mode === 'signup' && password !== confirmPassword) {
+      setError('Passwords do not match.');
+      return;
+    }
+
     setLoading(true);
     const response =
       mode === 'signup'
-        ? await supabase.auth.signUp({ email, password, options: { data: { username } } })
+        ? await supabase.auth.signUp({
+            email,
+            password,
+            options: {
+              data: { username },
+              emailRedirectTo: window.location.origin,
+            },
+          })
         : await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
     if (response.error) return setError(response.error.message);
-    if (mode === 'signup')
+
+    if (mode === 'signup' && !response.data.session) {
       return setMessage('Check your email to confirm your account, then come back to sign in.');
+    }
+
     window.location.assign('/');
   }
   return (
@@ -90,6 +107,19 @@ export default function AuthPage() {
               placeholder="At least 6 characters"
             />
           </label>
+          {mode === 'signup' && (
+            <label>
+              Confirm password
+              <input
+                required
+                type="password"
+                minLength="6"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Re-enter your password"
+              />
+            </label>
+          )}
           <button className="primary auth-submit" disabled={loading}>
             {loading && <LoaderCircle className="spin" size={17} />}{' '}
             {mode === 'signup' ? 'Create account' : 'Sign in'}{' '}
@@ -103,6 +133,7 @@ export default function AuthPage() {
               setMode(mode === 'signup' ? 'login' : 'signup');
               setError('');
               setMessage('');
+              setConfirmPassword('');
             }}
           >
             {mode === 'signup' ? 'Sign in' : 'Create an account'}
