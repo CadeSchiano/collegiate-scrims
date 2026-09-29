@@ -94,8 +94,8 @@ export default function NewTeamPage() {
           <p className="eyebrow">VERIFICATION SUBMITTED</p>
           <h1>Your team is in review.</h1>
           <p>
-            We’ll email you when your collegiate status is approved or rejected. Until then, your
-            roster can be set up but cannot use the marketplace.
+            Check your team page for the verification decision. Until approval, your roster can be
+            set up but cannot use the marketplace.
           </p>
           <Link href="/" className="primary">
             Back to Scrimnet <ArrowRight size={16} />
