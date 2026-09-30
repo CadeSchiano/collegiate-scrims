@@ -174,7 +174,7 @@ export default function MarketplacePage() {
     <main className="market-page">
       <header className="market-header">
         <div className="market-header-start">
-          <BackButton />
+          <BackButton showHome={false} />
           <Link href="/" className="brand">
             <span className="brand-mark">
               <span />

@@ -41,7 +41,7 @@ export default function AuthPage() {
   }
   return (
     <main className="auth-page">
-      <BackButton className="auth-back" />
+      <BackButton className="auth-back" showHome={false} />
       <Link href="/" className="auth-brand">
         <span className="brand-mark">
           <span />

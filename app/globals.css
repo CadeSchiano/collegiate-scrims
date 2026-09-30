@@ -1228,11 +1228,29 @@
 .back-button:hover {
   color: var(--ink);
 }
-.form-page > .back-button,
-.manage-page.centered > .back-button,
-.workspace-page.centered > .back-button,
-.live-team-page.centered > .back-button,
-.admin-page.centered > .back-button {
+.back-navigation {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+}
+.back-home {
+  color: var(--ink);
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -1.2px;
+  text-decoration: none;
+}
+.back-home > span:last-child span {
+  color: var(--orange);
+}
+.form-page > .back-navigation,
+.manage-page.centered > .back-navigation,
+.workspace-page.centered > .back-navigation,
+.live-team-page.centered > .back-navigation,
+.admin-page.centered > .back-navigation {
   position: fixed;
   top: 20px;
   left: 24px;
@@ -2167,7 +2185,7 @@ nav i {
 }
 .market-head {
   display: flex;
-  align-items: end;
+  align-items: flex-end;
   justify-content: space-between;
 }
 .market-head h2,

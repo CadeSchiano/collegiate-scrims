@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { ArrowRight, CheckCircle2, ShieldCheck, UsersRound } from 'lucide-react';
 import { supabase } from '../lib/supabase/client';
-import BackButton from '../components/BackButton';
 import NotificationsBell from '../components/NotificationsBell';
 
 export default function Home() {
@@ -36,7 +35,6 @@ export default function Home() {
     <main className="home-landing">
       <header className="home-header">
         <div className="home-header-start">
-          <BackButton fallback="/" />
           <Link href="/" className="brand">
             <span className="brand-mark">
               <span />
