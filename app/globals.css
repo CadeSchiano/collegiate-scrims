@@ -267,7 +267,7 @@
 .workspace-content {
   max-width: 930px;
   margin: auto;
-  padding: 46px 28px;
+  padding: 34px 28px;
 }
 .manage-content h1 {
   font-size: 29px;
@@ -568,7 +568,7 @@
 .market-content {
   max-width: 1060px;
   margin: auto;
-  padding: 46px 28px 70px;
+  padding: 32px 28px 48px;
 }
 .market-title {
   display: flex;
@@ -605,7 +605,7 @@
 .live-filters {
   display: flex;
   gap: 9px;
-  margin: 27px 0 20px;
+  margin: 18px 0 16px;
 }
 .live-filters label {
   height: 41px;
@@ -657,7 +657,7 @@
   letter-spacing: 0.3px;
 }
 .live-scrim-team {
-  padding: 17px 19px 14px;
+  padding: 14px 19px 11px;
   display: flex;
   gap: 11px;
   align-items: center;
@@ -691,14 +691,39 @@
 }
 .live-scrim-details {
   display: flex;
-  gap: 32px;
-  padding: 0 19px 15px;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 0 19px 13px;
 }
 .live-scrim-details span {
   font-size: 11px;
   font-weight: 700;
   display: grid;
   gap: 3px;
+}
+.live-scrim-details em {
+  width: fit-content;
+  border-radius: 6px;
+  padding: 4px 7px;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 800;
+}
+.rank-detail em {
+  background: #f0f2f5;
+  color: #516077;
+}
+.region-detail em {
+  background: #f1efff;
+  color: #6755a5;
+}
+.format-detail em {
+  background: #eaf2ff;
+  color: #2a64b7;
+}
+.duration-detail em {
+  background: #e9f7f0;
+  color: #267f5c;
 }
 .live-scrim-details strong {
   font: 500 9px 'DM Mono';
@@ -708,7 +733,7 @@
 }
 .live-scrim-bottom {
   border-top: 1px solid #f0f1f3;
-  padding: 12px 19px;
+  padding: 10px 19px;
   display: flex;
   align-items: center;
   gap: 15px;
@@ -780,7 +805,7 @@
   text-decoration: none;
 }
 .scrim-form-page {
-  padding: 60px 20px;
+  padding: 40px 20px;
   display: grid;
   place-items: start center;
 }
@@ -851,8 +876,7 @@
     min-width: 215px;
   }
   .live-scrim-details {
-    gap: 18px;
-    overflow-x: auto;
+    gap: 8px;
   }
   .live-scrim-bottom p {
     display: none;
@@ -971,7 +995,7 @@
 .live-team-content {
   max-width: 940px;
   margin: auto;
-  padding: 48px 28px;
+  padding: 36px 28px;
 }
 .live-team-title {
   display: flex;
@@ -1761,7 +1785,7 @@
 .form-page {
   min-height: 100vh;
   background: radial-gradient(ellipse at 50% 0, #fff0e4, transparent 40%), var(--cream);
-  padding: 65px 20px;
+  padding: 42px 20px;
   display: grid;
   place-items: start center;
 }

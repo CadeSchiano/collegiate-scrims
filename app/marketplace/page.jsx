@@ -13,6 +13,7 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase/client';
+import { dateKeyInTimeZone } from '../../lib/scrimScheduling.mjs';
 import BackButton from '../../components/BackButton';
 import NotificationsBell from '../../components/NotificationsBell';
 
@@ -118,7 +119,7 @@ export default function MarketplacePage() {
           haystack.includes(filters.search.toLowerCase()) &&
           (filters.region === 'All regions' || scrim.region === filters.region) &&
           (filters.format === 'Any format' || scrim.format === filters.format) &&
-          (!filters.date || scrim.scheduled_at.slice(0, 10) === filters.date)
+          (!filters.date || dateKeyInTimeZone(scrim.scheduled_at, scrim.time_zone) === filters.date)
         );
       }),
     [scrims, filters]
@@ -282,21 +283,23 @@ export default function MarketplacePage() {
                   </section>
                 </div>
                 <div className="live-scrim-details">
-                  <span>
+                  <span className="scrim-detail rank-detail">
                     <strong>Rank</strong>
-                    {scrim.min_rank} – {scrim.max_rank}
+                    <em>
+                      {scrim.min_rank} – {scrim.max_rank}
+                    </em>
                   </span>
-                  <span>
+                  <span className="scrim-detail region-detail">
                     <strong>Region</strong>
-                    {scrim.region}
+                    <em>{scrim.region}</em>
                   </span>
-                  <span>
+                  <span className="scrim-detail format-detail">
                     <strong>Format</strong>
-                    {scrim.format}
+                    <em>{scrim.format}</em>
                   </span>
-                  <span>
+                  <span className="scrim-detail duration-detail">
                     <strong>Duration</strong>
-                    {scrim.duration_minutes} min
+                    <em>{scrim.duration_minutes} min</em>
                   </span>
                 </div>
                 <div className="live-scrim-bottom">

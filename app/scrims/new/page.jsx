@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { CheckCircle2, LoaderCircle, Plus } from 'lucide-react';
 import { supabase } from '../../../lib/supabase/client';
 import BackButton from '../../../components/BackButton';
+import { localDateInputValue } from '../../../lib/scrimScheduling.mjs';
 
 const ranks = [
   'Champion',
@@ -76,7 +77,13 @@ export default function NewScrimPage() {
     e.preventDefault();
     setSaving(true);
     setError('');
-    const scheduled_at = new Date(`${form.date}T${form.time}:00`).toISOString();
+    const scheduledDate = new Date(`${form.date}T${form.time}:00`);
+    if (Number.isNaN(scheduledDate.getTime()) || scheduledDate <= new Date()) {
+      setSaving(false);
+      setError('Choose a start time that is still in the future. Same-day scrims are welcome.');
+      return;
+    }
+    const scheduled_at = scheduledDate.toISOString();
     const { error: insertError } = await supabase.from('scrims').insert({
       posting_team_id: team.id,
       min_rank: form.min_rank,
@@ -174,7 +181,7 @@ export default function NewScrimPage() {
               <input
                 required
                 type="date"
-                min={new Date().toISOString().slice(0, 10)}
+                min={localDateInputValue()}
                 value={form.date}
                 onChange={(e) => update('date', e.target.value)}
               />
